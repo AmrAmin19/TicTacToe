@@ -20,6 +20,7 @@ public  class EnterIpBase extends AnchorPane {
     protected final Button NextBtn;
     protected final ImageView arrow;
   private final Stage stage;
+//  public 
 
     public EnterIpBase(Stage stage) {
         this.stage =stage ;
@@ -110,9 +111,13 @@ public  class EnterIpBase extends AnchorPane {
         stage.setScene(modScene);
     }
     public void navigatetologin () {
-   LoginBase log = new LoginBase(stage);
-        Scene logScene = new Scene(log, 600, 400);
-        stage.setScene(logScene);     
+//        EnterIpTxtField.getText();
+          PlayerStatusBase LIstPage=new PlayerStatusBase(stage);
+        Scene ipScene = new Scene(LIstPage, 600, 400);
+        stage.setScene(ipScene);
+//   LoginBase log = new LoginBase(stage);
+//        Scene logScene = new Scene(log, 600, 400);
+//        stage.setScene(logScene);     
    
 }
 }

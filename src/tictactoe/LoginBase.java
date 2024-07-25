@@ -142,6 +142,7 @@ public  class LoginBase extends AnchorPane {
  
      public void navigatetoenterip () {
        EnterIpBase ipBase = new EnterIpBase(stage);
+      
         Scene ipScene = new Scene(ipBase, 600, 400);
         stage.setScene(ipScene);
     }

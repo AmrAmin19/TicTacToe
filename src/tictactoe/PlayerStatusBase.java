@@ -1,5 +1,6 @@
 package tictactoe;
 
+import org.json.JSONObject;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -7,6 +8,17 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.JSONException;
 
 public class PlayerStatusBase extends AnchorPane {
 
@@ -28,8 +40,12 @@ public class PlayerStatusBase extends AnchorPane {
     protected final Button Challenge3Btn;
     private final Stage stage;
 
+    private Socket socket;
+    private BufferedReader input;
+    private PrintWriter output;
+
     public PlayerStatusBase(Stage stage) {
-        this.stage =stage ;
+        this.stage = stage;
         text = new Text();
         text0 = new Text();
         text1 = new Text();
@@ -86,7 +102,7 @@ public class PlayerStatusBase extends AnchorPane {
         text2.setText("PLAYER NAME");
         text2.setFont(new Font("Agency FB Bold", 35.0));
 
-        text3.setFill(javafx.scene.paint.Color.valueOf("F4A24C"));
+        text3.setFill(javafx.scene.paint.Color.valueOf("#F4A24C"));
         text3.setLayoutX(474.0);
         text3.setLayoutY(114.0);
         text3.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
@@ -98,7 +114,7 @@ public class PlayerStatusBase extends AnchorPane {
         AncorPane2.setLayoutY(121.0);
         AncorPane2.setPrefHeight(227.0);
         AncorPane2.setPrefWidth(366.0);
-        AncorPane2.setStyle("-fx-background-color: #2A9DB8;" );
+        AncorPane2.setStyle("-fx-background-color: #2A9DB8;");
 
         text4.setLayoutX(41.0);
         text4.setFill(javafx.scene.paint.Color.valueOf("#ffffff"));
@@ -107,7 +123,6 @@ public class PlayerStatusBase extends AnchorPane {
         text4.setStrokeWidth(0.0);
         text4.setText("PLAYER ONE");
         text4.setFont(new Font("Agency FB Bold", 24.0));
-        
 
         text5.setLayoutX(39.0);
         text5.setFill(javafx.scene.paint.Color.valueOf("#ffffff"));
@@ -116,26 +131,24 @@ public class PlayerStatusBase extends AnchorPane {
         text5.setStrokeWidth(0.0);
         text5.setText("PLAYER TWO");
         text5.setFont(new Font("Agency FB Bold", 24.0));
-        
 
         text6.setLayoutX(39.0);
-        text6.setLayoutY(196.0);
         text6.setFill(javafx.scene.paint.Color.valueOf("#ffffff"));
+        text6.setLayoutY(196.0);
         text6.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
         text6.setStrokeWidth(0.0);
         text6.setText("PLAYER THREE");
         text6.setFont(new Font("Agency FB Bold", 24.0));
-        
-        text7.setLayoutX(121.0);
-        text7.setLayoutY(46.0);
+
+        text7.setLayoutX(284.0);
         text7.setFill(javafx.scene.paint.Color.valueOf("#ffffff"));
+        text7.setLayoutY(48.0);
         text7.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
         text7.setStrokeWidth(0.0);
-        text7.setText("ONLINE PLAYER");
+        text7.setText("ACTIVE USERS");
         text7.setFont(new Font("Agency FB Bold", 24.0));
-        
 
-        ImageViwe1.setFitHeight(35.0);
+        ImageViwe1.setFitHeight(34.0);
         ImageViwe1.setFitWidth(34.0);
         ImageViwe1.setLayoutX(4.0);
         ImageViwe1.setLayoutY(70.0);
@@ -146,7 +159,7 @@ public class PlayerStatusBase extends AnchorPane {
         ImageViwe2.setFitHeight(34.0);
         ImageViwe2.setFitWidth(34.0);
         ImageViwe2.setLayoutX(4.0);
-        ImageViwe2.setLayoutY(119.0);
+        ImageViwe2.setLayoutY(120.0);
         ImageViwe2.setPickOnBounds(true);
         ImageViwe2.setPreserveRatio(true);
         ImageViwe2.setImage(new Image(getClass().getResource("person.png").toExternalForm()));
@@ -197,5 +210,49 @@ public class PlayerStatusBase extends AnchorPane {
         AncorPane2.getChildren().add(Challenge3Btn);
         getChildren().add(AncorPane2);
 
+        // Connect to the server
+        try {
+            socket = new Socket("10.10.11.79", 9081);
+            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            output = new PrintWriter(socket.getOutputStream(), true);
+
+            // Send username to server
+            JSONObject request = new JSONObject();
+            request.put("username", "USERNAME");
+            output.println(request.toString());
+
+            // Read the active users list from server
+            String response = input.readLine();
+            JSONObject data = new JSONObject(response);
+            List<String> usersList = Arrays.asList(data.getString("activeUsers").split(","));
+            // Update UI with active users
+            if (usersList.size() > 0) {
+                text4.setText(usersList.get(0));
+            }
+            if (usersList.size() > 1) {
+                text5.setText(usersList.get(1));
+            }
+            if (usersList.size() > 2) {
+                text6.setText(usersList.get(2));
+            }
+
+            Challenge1Btn.setOnAction(event -> challengeUser(usersList.get(0)));
+            Challenge2Btn.setOnAction(event -> challengeUser(usersList.get(1)));
+            Challenge3Btn.setOnAction(event -> challengeUser(usersList.get(2)));
+
+        } catch (IOException | JSONException e) {
+            Logger.getLogger(PlayerStatusBase.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    private void challengeUser(String opponent) {
+        try {
+            JSONObject request = new JSONObject();
+            request.put("command", "CHALLENGE");
+            request.put("opponent", opponent);
+            output.println(request.toString());
+        } catch (JSONException ex) {
+            Logger.getLogger(PlayerStatusBase.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
