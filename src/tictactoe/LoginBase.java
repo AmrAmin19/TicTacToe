@@ -9,6 +9,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+ 
 
 public  class LoginBase extends AnchorPane {
 
@@ -23,9 +24,14 @@ public  class LoginBase extends AnchorPane {
     protected final Button RegisterBtn;
     protected final ImageView arrow;
     protected final Stage stage;
+    private final String serverIp;  // Remove static and final
+    private static final int SERVER_PORT = 5005;
 
-    public LoginBase( Stage stage ) {
+    public LoginBase( Stage stage , String serverIp ) {
         this.stage = stage;
+        this.serverIp = serverIp; // Store the server IP address for future use
+
+        
         text = new Text();
         text0 = new Text();
         text1 = new Text();
@@ -102,6 +108,7 @@ public  class LoginBase extends AnchorPane {
         LoginBtn.setText("LOGIN");
         LoginBtn.setFont(new Font("Agency FB Bold", 20.0));
         LoginBtn.setStyle("-fx-background-color: #2A9DB8; -fx-text-fill: #ffffff;");
+        LoginBtn.setOnAction(e -> login ());
 
 
         RegisterBtn.setLayoutX(311.0);
@@ -134,6 +141,7 @@ public  class LoginBase extends AnchorPane {
         getChildren().add(arrow);
 
     }
+    
      public void navigate() {
        userRegisterBase regst = new userRegisterBase(stage);
         Scene regScene = new Scene(regst, 600, 400);
