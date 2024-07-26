@@ -1,15 +1,28 @@
 package tictactoe;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import static javafx.scene.layout.Region.USE_PREF_SIZE;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
- 
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public  class LoginBase extends AnchorPane {
 
@@ -153,4 +166,52 @@ public  class LoginBase extends AnchorPane {
         Scene ipScene = new Scene(ipBase, 600, 400);
         stage.setScene(ipScene);
     }
+
+    private void login() {
+     String email = EmailField.getText();
+        String password = PassTxtField.getText();
+
+        new Thread(() -> {
+            try (Socket socket = new Socket(serverIp, SERVER_PORT);
+                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+
+                JSONObject request = new JSONObject();
+                request.put("action", "LOGIN");
+                request.put("email", email);
+                request.put("password", password);
+
+                out.println(request.toString());
+                System.out.println("Request sent: " + request.toString());
+
+                String response = in.readLine();
+                System.out.println("Response received: " + response);
+
+                if (response != null) {
+                    JSONObject jsonResponse = new JSONObject(response);
+
+                    Platform.runLater(() -> {
+                        try {
+                            if ("SUCCESS".equals(jsonResponse.getString("status"))) {
+                                Parent root = FXMLLoader.load(getClass().getResource("PlayerStatus.fxml"));
+                                Scene playerStatusScene = new Scene(root);
+                                stage.setScene(playerStatusScene);
+                            } else {
+                                showError(jsonResponse.getString("message"));
+                            }
+                        } catch (JSONException | IOException ex) {
+                            showError("Error processing response.");
+                            Logger.getLogger(LoginBase.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    });
+                } else {
+                    Platform.runLater(() -> showError("No response from server."));
+                }
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+                Platform.runLater(() -> showError("Connection error."));
+            }
+        }).start();
+    }
+
 }
