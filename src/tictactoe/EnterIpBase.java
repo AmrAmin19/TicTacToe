@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
@@ -156,5 +157,12 @@ public  class EnterIpBase extends AnchorPane {
         return false;
     }
     }
+      private void showError(String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR, message);
+            alert.showAndWait();
+        });
+    }
+
 
 }
