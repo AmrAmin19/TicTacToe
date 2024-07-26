@@ -288,7 +288,33 @@ public class Boardmode1Easy extends AnchorPane {
     }
     
     public void alertShowDraw() {
-        //showAlert("Draw", new nowinnermode1Base());
+        Platform.runLater(() -> {
+            // Create the winner message dialog
+            nowinnermode1Base draw = new nowinnermode1Base();
+
+            // Create a modal dialog to display the winner message
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(stage);
+            Scene dialogScene = new Scene(draw, 500, 300);
+            dialogStage.setScene(dialogScene);
+
+            // Get the "PLAY AGAIN" button from the dialog
+            Button playAgainButton = draw.getPlayAgainButton();
+            playAgainButton.setOnAction(e -> {
+                draw.stopMediaPlayer();
+                dialogStage.close();
+                stage.setScene(new Scene(new Boardmode1Easy(stage)));
+            });
+
+            // Handle dialog stage close request
+            dialogStage.setOnCloseRequest((WindowEvent we) -> {
+                draw.stopMediaPlayer();
+                stage.setScene(new Scene(new Boardmode1Easy(stage)));
+            });
+
+            dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
+        });
     }
     
 
