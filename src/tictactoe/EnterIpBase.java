@@ -90,7 +90,7 @@ public  class EnterIpBase extends AnchorPane {
         NextBtn.setText("NEXT");
         NextBtn.setFont(new Font("Agency FB Bold ", 24.0));
         NextBtn.setStyle("-fx-background-color: #2A9DB8; -fx-text-fill: #ffffff;");
-        NextBtn.setOnAction(e ->navigatetologin ());
+        NextBtn.setOnAction(e ->navigatetoLogin ());
 
         arrow.setAccessibleRole(javafx.scene.AccessibleRole.BUTTON);
         arrow.setFitHeight(34.0);
