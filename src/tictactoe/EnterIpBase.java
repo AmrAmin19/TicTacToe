@@ -1,5 +1,9 @@
 package tictactoe;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -143,4 +147,14 @@ public  class EnterIpBase extends AnchorPane {
             "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
         return ip.matches(ipPattern);
     }
+     private boolean isServerReachable(String serverIp) {
+    try (Socket socket = new Socket()) {
+        SocketAddress socketAddress = new InetSocketAddress(serverIp, 5005);
+        socket.connect(socketAddress, 1000); // 1 seconds timeout
+        return true;
+    } catch (IOException e) {
+        return false;
+    }
+    }
+
 }
