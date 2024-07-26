@@ -23,9 +23,12 @@ public  class userRegisterBase extends AnchorPane {
     protected final Button NewRegisterBtn;
     protected final ImageView arrow;
      private final Stage stage;
+     private final String serverIp;
 
-    public userRegisterBase(Stage stage) {
+
+    public userRegisterBase(Stage stage , String serverIp ) {
         this.stage = stage;
+        this.serverIp = serverIp;
 
         text = new Text();
         text0 = new Text();
@@ -135,7 +138,7 @@ public  class userRegisterBase extends AnchorPane {
 
   }
 public void navigatetolog() {
-       LoginBase log = new LoginBase(stage);
+       LoginBase log = new LoginBase(stage, serverIp);
         Scene loScene = new Scene(log, 600, 400);
         stage.setScene(loScene);
     }
