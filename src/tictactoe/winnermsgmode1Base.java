@@ -12,6 +12,8 @@ import javafx.scene.text.Font;
 import javafx.geometry.Pos;
 import javafx.application.Platform;
 import java.io.File;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
 public class winnermsgmode1Base extends DialogPane {
 
@@ -19,8 +21,10 @@ public class winnermsgmode1Base extends DialogPane {
     protected final MediaView mediaView;
     protected final Button button;
     protected MediaPlayer mediaPlayer;
+    protected final Stage stage;
 
-    public winnermsgmode1Base() {
+    public winnermsgmode1Base(Stage stage) {
+        this.stage = stage;
         vbox = new VBox();
         mediaView = new MediaView();
         button = new Button();
@@ -62,7 +66,9 @@ public class winnermsgmode1Base extends DialogPane {
         // Add event handler to stop mediaPlayer and transition to a new game
         button.setOnAction(event -> {
             stopMediaPlayer();  // Properly stop and dispose of the media player
-            handlePlayAgain();
+        Boardmode1Easy easy = new Boardmode1Easy(stage);
+        Scene eascene = new Scene(easy, 600, 400);
+        stage.setScene(eascene); // Transition to the board game
         });
 
         // Add MediaView and Button to VBox
@@ -80,21 +86,12 @@ public class winnermsgmode1Base extends DialogPane {
         setContent(stackPane);
     }
 
-    private void handlePlayAgain() {
-        // Logic to transition to a new game
-        System.out.println("PLAY AGAIN button pressed. Transitioning to a new game...");
-        
-        // Example of transitioning to a new game; replace with your actual logic
-        // For example, you might notify the main application to start a new game or show a new scene
-    }
-
     void stopMediaPlayer() {
         Platform.runLater(() -> {
             if (mediaPlayer != null) {
                 try {
                     mediaPlayer.stop(); // Stop the video playback
-                    mediaPlayer.dispose(); // Release resources
-                    System.out.println("Media player stopped and disposed.");
+                    System.out.println("Media player stopped");
                 } catch (Exception e) {
                     System.err.println("Error while stopping and disposing media player: " + e.getMessage());
                 } finally {
@@ -104,7 +101,5 @@ public class winnermsgmode1Base extends DialogPane {
         });
     }
 
-    public Button getPlayAgainButton() {
-        return button;
-    }
+    
 }

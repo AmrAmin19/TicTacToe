@@ -31,9 +31,6 @@ public class TicTacToe extends Application {
         primaryStage.setTitle("Tic Tac Toe");
         primaryStage.setScene(mainScene);
         primaryStage.show();
-        
-       
-
     /**
      * @param the command line arguments
      */

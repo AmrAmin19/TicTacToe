@@ -7,11 +7,13 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.DialogPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -222,61 +224,49 @@ public class Boardmode1Easy extends AnchorPane {
         return false;
     }
 
-    public void alertShowO() {
-        alert.setTitle("Player Two win");
-        alert.setHeaderText(null);
-        losermsgmode1Base customDialogPane = new losermsgmode1Base();
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setOnCloseRequest(event -> {
-            navigateback();
-            alertStage.close();
-        });
 
-        // Set the custom dialog pane as the content of the alert
-        alert.setDialogPane(customDialogPane);
-        customDialogPane.getPlayAgainButton().setOnAction(e -> {
-            playAgain();
-            alertStage.close();
-        });
-        alertStage.showAndWait();
+    public void alertShowO() {
+        showAlert("Player Two Wins", new losermsgmode1Base());
     }
 
     public void alertShowX() {
-        alert.setTitle("Player  Win");
-        alert.setHeaderText(null);
-        winnermsgmode1Base customDialogPane = new winnermsgmode1Base();
-        alert.setDialogPane(customDialogPane);
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setOnCloseRequest(event -> {
-            navigateback();
-            alertStage.close();
-        });
-        customDialogPane.getPlayAgainButton().setOnAction(e -> {
-            // User chose "Play Again"
-            System.out.println("Play Again selected.");
-            playAgain();
-            alertStage.close();
-        });
-        alertStage.showAndWait();
+        showAlert("Player Wins", new winnermsgmode1Base(stage));
+    }
+    
+    public void alertShowDraw() {
+        showAlert("Draw", new nowinnermode1Base());
     }
 
-    public void alertShowDraw() {
-        alert.setTitle("Draw");
-        alert.setHeaderText(null);
-        nowinnermode1Base customDrawPane = new nowinnermode1Base();
-        // Set the custom dialog pane as the content of the alert
-        alert.setDialogPane(customDrawPane);
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setOnCloseRequest(event -> {
-            navigateback();
-            alertStage.close();
-        });
-        customDrawPane.getPlayAgainButton().setOnAction(e -> {
+   private void showAlert(String title, Pane customPane) {
+    Alert alert = new Alert(Alert.AlertType.NONE);
+    alert.setTitle(title);
+    alert.setHeaderText(null);
+
+    DialogPane dialogPane = new DialogPane();
+    dialogPane.setContent(customPane);  // Set your custom Pane here
+
+    alert.setDialogPane(dialogPane);
+
+    // Handle the "PLAY AGAIN" button action
+    Button playAgainButton = (Button) customPane.lookup("#playAgainButton");
+    if (playAgainButton != null) {
+        playAgainButton.setOnAction(e -> {
             playAgain();
-            alertStage.close();
+            alert.close();  // Close the alert to navigate back to the game
         });
-        alertStage.showAndWait();
     }
+
+    // Ensure video stops when the dialog is closed
+    alert.setOnCloseRequest(event -> {
+        if (customPane instanceof winnermsgmode1Base) {
+            ((winnermsgmode1Base) customPane).stopMediaPlayer();
+        }
+        navigateback();  // Navigate to the game screen
+    });
+
+    alert.showAndWait();
+}
+
 
     public void playAgain() {
         resetBoard();  // Ensure the board is reset
