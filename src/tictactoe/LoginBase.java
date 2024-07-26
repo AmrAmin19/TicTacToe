@@ -156,7 +156,7 @@ public  class LoginBase extends AnchorPane {
     }
     
      public void navigate() {
-       userRegisterBase regst = new userRegisterBase(stage);
+       userRegisterBase regst = new userRegisterBase(stage, serverIp);
         Scene regScene = new Scene(regst, 600, 400);
         stage.setScene(regScene);
     }
@@ -218,5 +218,7 @@ public  class LoginBase extends AnchorPane {
         Alert alert = new Alert(Alert.AlertType.ERROR, message);
         alert.showAndWait();    
     }
+    
+
 
 }
