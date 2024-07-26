@@ -17,7 +17,7 @@ public  class LoginBase extends AnchorPane {
     protected final Text text1;
     protected final Text text2;
     protected final Text text3;
-    protected final TextField UserNameTxtField;
+    protected final TextField EmailField;
     protected final TextField PassTxtField;
     protected final Button LoginBtn;
     protected final Button RegisterBtn;
@@ -31,7 +31,7 @@ public  class LoginBase extends AnchorPane {
         text1 = new Text();
         text2 = new Text();
         text3 = new Text();
-        UserNameTxtField = new TextField();
+        EmailField = new TextField();
         PassTxtField = new TextField();
         LoginBtn = new Button();
         RegisterBtn = new Button();
@@ -84,10 +84,10 @@ public  class LoginBase extends AnchorPane {
         text3.setText("ENTER PASSWORD");
         text3.setFont(new Font("Agency FB Bold", 35.0));
 
-        UserNameTxtField.setLayoutX(67.0);
-        UserNameTxtField.setLayoutY(137.0);
-        UserNameTxtField.setPrefHeight(42.0);
-        UserNameTxtField.setPrefWidth(267.0);
+        EmailField.setLayoutX(67.0);
+        EmailField.setLayoutY(137.0);
+        EmailField.setPrefHeight(42.0);
+        EmailField.setPrefWidth(267.0);
 
         PassTxtField.setLayoutX(66.0);
         PassTxtField.setLayoutY(247.0);
@@ -127,7 +127,7 @@ public  class LoginBase extends AnchorPane {
         getChildren().add(text1);
         getChildren().add(text2);
         getChildren().add(text3);
-        getChildren().add(UserNameTxtField);
+        getChildren().add(EmailField);
         getChildren().add(PassTxtField);
         getChildren().add(LoginBtn);
         getChildren().add(RegisterBtn);
