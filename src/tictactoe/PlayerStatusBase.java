@@ -23,42 +23,37 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 
 public class PlayerStatusBase extends AnchorPane {
-
-    // UI Components
     protected final Text text;
     protected final Text text0;
     protected final Text text1;
     protected final Text text2;
     protected final Text text3;
+    protected final Text text4;
+    protected final ImageView RecImageView;
+    protected final ImageView BackImageView;
     protected final ScrollPane scrollPane;
+    protected final AnchorPane anchorPane2;
     protected final VBox vBox;
     private final Stage stage;
-
-    // Networking components
     private Socket socket;
     private BufferedReader input;
     private PrintWriter output;
 
-    // Constructor to initialize UI and network connection
     public PlayerStatusBase(Stage stage) {
         this.stage = stage;
+
         text = new Text();
         text0 = new Text();
         text1 = new Text();
         text2 = new Text();
         text3 = new Text();
+        text4 = new Text();
+        RecImageView = new ImageView();
+        BackImageView = new ImageView();
         scrollPane = new ScrollPane();
+        anchorPane2 = new AnchorPane();
         vBox = new VBox(10); // Vertical box with spacing of 10
 
-        // Set dimensions of the AnchorPane
-        setMaxHeight(USE_PREF_SIZE);
-        setMaxWidth(USE_PREF_SIZE);
-        setMinHeight(USE_PREF_SIZE);
-        setMinWidth(USE_PREF_SIZE);
-        setPrefHeight(400.0);
-        setPrefWidth(600.0);
-
-        // Title text settings
         text.setFill(javafx.scene.paint.Color.valueOf("#04b1b8"));
         text.setLayoutX(206.0);
         text.setLayoutY(65.0);
@@ -83,8 +78,7 @@ public class PlayerStatusBase extends AnchorPane {
         text1.setText("TAC");
         text1.setFont(new Font("Agency FB Bold", 45.0));
 
-        // Labels for player name and score
-        text2.setFill(javafx.scene.paint.Color.valueOf("#2A9DB8"));
+        text2.setFill(javafx.scene.paint.Color.valueOf("#04b1b8"));
         text2.setLayoutX(26.0);
         text2.setLayoutY(113.0);
         text2.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
@@ -92,41 +86,73 @@ public class PlayerStatusBase extends AnchorPane {
         text2.setText("PLAYER NAME");
         text2.setFont(new Font("Agency FB Bold", 35.0));
 
-        text3.setFill(javafx.scene.paint.Color.valueOf("#F4A24C"));
-        text3.setLayoutX(474.0);
+        text3.setFill(javafx.scene.paint.Color.valueOf("#f4a24c"));
+        text3.setLayoutX(432.0);
         text3.setLayoutY(114.0);
         text3.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
         text3.setStrokeWidth(0.0);
-        text3.setText("SCORE");
+        text3.setText("SCORE ");
         text3.setFont(new Font("Agency FB Bold", 35.0));
 
-        // ScrollPane to hold the list of players
-        scrollPane.setLayoutX(110.0);
-        scrollPane.setLayoutY(121.0);
-        scrollPane.setPrefHeight(227.0);
-        scrollPane.setPrefWidth(366.0);
-        scrollPane.setContent(vBox);
-        scrollPane.setStyle("-fx-background-color: #2A9DB8;");
-        scrollPane.setFitToWidth(true);
+        text4.setFill(javafx.scene.paint.Color.valueOf("#04b1b8"));
+        text4.setLayoutX(542.0);
+        text4.setLayoutY(113.0);
+        text4.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
+        text4.setStrokeWidth(0.0);
+        text4.setText("0");
+        text4.setFont(new Font("Agency FB Bold", 35.0));
 
-        // Add UI components to the AnchorPane
+        RecImageView.setAccessibleRole(javafx.scene.AccessibleRole.BUTTON);
+        RecImageView.setFitHeight(50.0);
+        RecImageView.setFitWidth(50.0);
+        RecImageView.setLayoutX(533.0);
+        RecImageView.setLayoutY(336.0);
+        RecImageView.setPickOnBounds(true);
+        RecImageView.setPreserveRatio(true);
+        RecImageView.setImage(new Image(getClass().getResource("rec.png").toExternalForm()));
+
+        BackImageView.setAccessibleRole(javafx.scene.AccessibleRole.BUTTON);
+        BackImageView.setFitHeight(50.0);
+        BackImageView.setFitWidth(50.0);
+        BackImageView.setLayoutX(26.0);
+        BackImageView.setLayoutY(22.0);
+        BackImageView.setPickOnBounds(true);
+        BackImageView.setPreserveRatio(true);
+        BackImageView.setImage(new Image(getClass().getResource("arrow2.png").toExternalForm()));
+
+        scrollPane.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setLayoutX(90.0);
+        scrollPane.setLayoutY(136.0);
+        scrollPane.setPrefHeight(204.0);
+        scrollPane.setPrefWidth(385.0);
+        scrollPane.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.ALWAYS);
+
+        anchorPane2.setMinHeight(0.0);
+        anchorPane2.setMinWidth(0.0);
+        anchorPane2.setPrefHeight(344.0);
+        anchorPane2.setPrefWidth(426.0);
+
+        scrollPane.setContent(vBox);
+
         getChildren().add(text);
         getChildren().add(text0);
         getChildren().add(text1);
         getChildren().add(text2);
         getChildren().add(text3);
+        getChildren().add(text4);
+        getChildren().add(RecImageView);
+        getChildren().add(BackImageView);
         getChildren().add(scrollPane);
 
         // Connect to the server
         try {
-            // Establish socket connection
-            socket = new Socket("192.168.1.106", 9081);
+            socket = new Socket("192.168.1.106", 9081); // Replace with your server IP and port
             input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             output = new PrintWriter(socket.getOutputStream(), true);
 
             // Send username to server
             JSONObject request = new JSONObject();
-            request.put("username", "USERNAME");
+            request.put("username", "USERNAME"); // Replace with actual username
             output.println(request.toString());
 
             // Read the active users list from server
@@ -136,7 +162,7 @@ public class PlayerStatusBase extends AnchorPane {
 
             // Update UI with active users
             for (String user : usersList) {
-                vBox.getChildren().add(createPlayerEntry(user));
+                vBox.getChildren().add(createPlayerEntry(user)); // Add each player entry to the VBox
             }
 
         } catch (IOException | JSONException e) {
@@ -144,7 +170,7 @@ public class PlayerStatusBase extends AnchorPane {
         }
     }
 
-    // Method to create a UI entry for each player
+    // Create a UI entry for each player
     private AnchorPane createPlayerEntry(String playerName) {
         AnchorPane playerPane = new AnchorPane();
         playerPane.setStyle("-fx-background-color: #2A9DB8;");
@@ -158,7 +184,7 @@ public class PlayerStatusBase extends AnchorPane {
         playerText.setLayoutY(30.0);
         playerText.setFont(new Font("Agency FB Bold", 24.0));
 
-        // Player image
+        // Player avatar image
         ImageView playerImage = new ImageView();
         playerImage.setFitHeight(34.0);
         playerImage.setFitWidth(34.0);
@@ -166,7 +192,7 @@ public class PlayerStatusBase extends AnchorPane {
         playerImage.setLayoutY(8.0);
         playerImage.setPickOnBounds(true);
         playerImage.setPreserveRatio(true);
-        playerImage.setImage(new Image(getClass().getResource("person.png").toExternalForm()));
+        playerImage.setImage(new Image(getClass().getResource("person.png").toExternalForm())); // Ensure the image exists in your resources
 
         // Challenge button
         Button challengeButton = new Button("challenge");
@@ -174,28 +200,13 @@ public class PlayerStatusBase extends AnchorPane {
         challengeButton.setLayoutY(10.0);
         challengeButton.setMnemonicParsing(false);
         challengeButton.setFont(new Font("Agency FB Bold", 18.0));
-        challengeButton.setStyle("-fx-background-color: #F4A24C; -fx-text-fill: #ffffff;");
+        challengeButton.setStyle("-fx-background-color: #ffd700;");
 
-        // Set action for challenge button
-        challengeButton.setOnAction(event -> challengeUser(playerName));
-
-        // Add components to playerPane
+        // Add components to the player pane
         playerPane.getChildren().add(playerText);
         playerPane.getChildren().add(playerImage);
         playerPane.getChildren().add(challengeButton);
 
         return playerPane;
-    }
-
-    // Method to send a challenge request to the server
-    private void challengeUser(String opponent) {
-        try {
-            JSONObject request = new JSONObject();
-            request.put("command", "CHALLENGE");
-            request.put("opponent", opponent);
-            output.println(request.toString());
-        } catch (JSONException ex) {
-            Logger.getLogger(PlayerStatusBase.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 }

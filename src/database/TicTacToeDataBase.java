@@ -9,10 +9,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.derby.jdbc.ClientDriver;  // Ensure this import is correct and the library is included in your project
 
-/**
- *
- * @author Abdul-Rahman
- */
 public class TicTacToeDataBase {
     private static TicTacToeDataBase instanceData; // Singleton instance
     private Connection con;               // Database connection
@@ -64,7 +60,7 @@ public class TicTacToeDataBase {
     // Synchronized method to get all active players
     public synchronized ResultSet getActivePlayers() {
         try {
-            this.pst = con.prepareStatement("Select * from player where isactive = true", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            this.pst = con.prepareStatement("Select username, isplaying from player where isactive = true", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
             return pst.executeQuery();
         } catch (SQLException ex) {
             Logger.getLogger(TicTacToeDataBase.class.getName()).log(Level.SEVERE, null, ex);
@@ -87,8 +83,7 @@ public class TicTacToeDataBase {
     // Synchronized method to change all players' state to not playing
     public synchronized void changeStateToNotPlaying() {
         try {
-            pst = con.prepareStatement("update player set isPlaying = ?", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-            pst.setString(1, "false");
+            pst = con.prepareStatement("update player set isPlaying = false", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
             pst.executeUpdate();
             updateResultSet();
         } catch (SQLException ex) {
@@ -100,8 +95,7 @@ public class TicTacToeDataBase {
     // Synchronized method to change all players' state to offline
     public synchronized void changeStateToOffline() {
         try {
-            pst = con.prepareStatement("update player set isActive = ?", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-            pst.setString(1, "false");
+            pst = con.prepareStatement("update player set isActive = false", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
             pst.executeUpdate();
             updateResultSet();
         } catch (SQLException ex) {
@@ -112,10 +106,9 @@ public class TicTacToeDataBase {
 
     // Synchronized method to log in a player
     public synchronized void login(String email, String password) throws SQLException {
-        pst = con.prepareStatement("update player set isActive = ? where email = ? and password = ?", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-        pst.setString(1, "true");
-        pst.setString(2, email);
-        pst.setString(3, password);
+        pst = con.prepareStatement("update player set isActive = true where email = ? and password = ?", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        pst.setString(1, email);
+        pst.setString(2, password);
         pst.executeUpdate();
         updateResultSet();
     }
@@ -273,18 +266,18 @@ public class TicTacToeDataBase {
         }
         return false;
     }
-
+// for button 
     // Synchronized method to check if a player is playing
     public synchronized boolean checkPlaying(String player) {
         ResultSet checkAv;
         PreparedStatement pstCheckAv;
 
         try {
-            pstCheckAv = con.prepareStatement("select * from player where username = ?");
+            pstCheckAv = con.prepareStatement("select isPlaying from player where username = ?");
             pstCheckAv.setString(1, player);
             checkAv = pstCheckAv.executeQuery();
             checkAv.next();
-            return checkAv.getBoolean(4);
+            return checkAv.getBoolean(1);
         } catch (SQLException ex) {
             Logger.getLogger(TicTacToeDataBase.class.getName()).log(Level.SEVERE, null, ex);
         }
