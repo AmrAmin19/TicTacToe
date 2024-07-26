@@ -186,20 +186,15 @@ public class userRegisterBase extends AnchorPane {
                     jsonData.put("password", password);
                     
                     String data = jsonData.toString();
-                    
-                    String serverAddress = "172.16.8.202"; // Replace with actual server address
-                    int port = 9081; // Replace with actual server port if different
+                    String serverAddress = "172.16.8.202"; 
+                    int port = 9081; 
                     
                     try (Socket socket = new Socket(serverAddress, port);
                             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-                            BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-                        
-                        // Sending request header and data with delimiter
+                            BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {  // Sending request header and data with delimiter
                         String request = "SignUp####" + data;
                         dos.writeBytes(request + "\n");
                         dos.flush();
-                        
-                        // Reading response
                         String responseLine;
                         while ((responseLine = br.readLine()) != null) {
                             System.out.println("Server response: " + responseLine);
@@ -216,8 +211,6 @@ public class userRegisterBase extends AnchorPane {
                 return null;
             }
         };
-
-        // Execute the task in a background thread
         new Thread(task).start();
     }
 
