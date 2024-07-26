@@ -169,7 +169,7 @@ public  class LoginBase extends AnchorPane {
 
     private void login() {
      String email = EmailField.getText();
-        String password = PassTxtField.getText();
+     String password = PassTxtField.getText();
 
         new Thread(() -> {
             try (Socket socket = new Socket(serverIp, SERVER_PORT);
@@ -212,6 +212,11 @@ public  class LoginBase extends AnchorPane {
                 Platform.runLater(() -> showError("Connection error."));
             }
         }).start();
+    }
+
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR, message);
+        alert.showAndWait();    
     }
 
 }
