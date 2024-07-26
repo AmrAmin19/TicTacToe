@@ -3,8 +3,6 @@ package tictactoe;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -14,7 +12,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class Boardmode1medium extends AnchorPane {
 
@@ -38,7 +38,6 @@ public class Boardmode1medium extends AnchorPane {
     protected final Text text0;
     protected final Text text1;
     protected final ImageView arrow;
-    Alert alert;
     private boolean playerTurn = true;
     private final Stage stage;
 
@@ -65,7 +64,6 @@ public class Boardmode1medium extends AnchorPane {
         text0 = new Text();
         text1 = new Text();
         arrow = new ImageView();
-        alert = new Alert(AlertType.NONE);
 
         setMaxHeight(USE_PREF_SIZE);
         setMaxWidth(USE_PREF_SIZE);
@@ -237,121 +235,64 @@ public class Boardmode1medium extends AnchorPane {
                 }
             }
             if (count == 2 && emptyIndex != -1) {
-                // Make the move in the empty spot
-                setButtonText(emptyIndex, "O");
-                return true;
+                Button emptyButton = getButtonByIndex(emptyIndex);
+                if (emptyButton != null) {
+                    emptyButton.setText("O");
+                    emptyButton.setDisable(true);
+                    return true;
+                }
             }
         }
         return false;
     }
 
     private boolean takeCenter() {
-        if (getButtonText(4).isEmpty()) {
-            setButtonText(4, "O");
+        return takePosition(4);
+    }
+
+    private boolean takeCorner() {
+        return takePosition(0) || takePosition(2) || takePosition(6) || takePosition(8);
+    }
+
+    private boolean takeSide() {
+        return takePosition(1) || takePosition(3) || takePosition(5) || takePosition(7);
+    }
+
+    private boolean takePosition(int index) {
+        Button button = getButtonByIndex(index);
+        if (button != null && button.getText().isEmpty()) {
+            button.setText("O");
+            button.setDisable(true);
             return true;
         }
         return false;
     }
 
-    private boolean takeCorner() {
-        int[] corners = {0, 2, 6, 8};
-        for (int corner : corners) {
-            if (getButtonText(corner).isEmpty()) {
-                setButtonText(corner, "O");
-                return true;
-            }
+    private Button getButtonByIndex(int index) {
+        switch (index) {
+            case 0: return btn1;
+            case 1: return btn2;
+            case 2: return btn3;
+            case 3: return btn4;
+            case 4: return btn5;
+            case 5: return btn6;
+            case 6: return btn7;
+            case 7: return btn8;
+            case 8: return btn9;
+            default: return null;
         }
-        return false;
-    }
-
-    private boolean takeSide() {
-        int[] sides = {1, 3, 5, 7};
-        for (int side : sides) {
-            if (getButtonText(side).isEmpty()) {
-                setButtonText(side, "O");
-                return true;
-            }
-        }
-        return false;
     }
 
     private String[] getBoardState() {
-        String[] board = new String[9];
-        for (int i = 0; i < 9; i++) {
-            board[i] = getButtonText(i);
-        }
-        return board;
-    }
-
-    private String getButtonText(int index) {
-        switch (index) {
-            case 0:
-                return btn1.getText();
-            case 1:
-                return btn2.getText();
-            case 2:
-                return btn3.getText();
-            case 3:
-                return btn4.getText();
-            case 4:
-                return btn5.getText();
-            case 5:
-                return btn6.getText();
-            case 6:
-                return btn7.getText();
-            case 7:
-                return btn8.getText();
-            case 8:
-                return btn9.getText();
-            default:
-                return "";
-        }
-    }
-
-    private void setButtonText(int index, String text) {
-        switch (index) {
-            case 0:
-                btn1.setText(text);
-                btn1.setDisable(true);
-                break;
-            case 1:
-                btn2.setText(text);
-                btn2.setDisable(true);
-                break;
-            case 2:
-                btn3.setText(text);
-                btn3.setDisable(true);
-                break;
-            case 3:
-                btn4.setText(text);
-                btn4.setDisable(true);
-                break;
-            case 4:
-                btn5.setText(text);
-                btn5.setDisable(true);
-                break;
-            case 5:
-                btn6.setText(text);
-                btn6.setDisable(true);
-                break;
-            case 6:
-                btn7.setText(text);
-                btn7.setDisable(true);
-                break;
-            case 7:
-                btn8.setText(text);
-                btn8.setDisable(true);
-                break;
-            case 8:
-                btn9.setText(text);
-                btn9.setDisable(true);
-                break;
-        }
+        return new String[]{
+            btn1.getText(), btn2.getText(), btn3.getText(),
+            btn4.getText(), btn5.getText(), btn6.getText(),
+            btn7.getText(), btn8.getText(), btn9.getText()
+        };
     }
 
     private boolean isBoardFull() {
-        String[] board = getBoardState();
-        for (String cell : board) {
+        for (String cell : getBoardState()) {
             if (cell.isEmpty()) {
                 return false;
             }
@@ -369,100 +310,58 @@ public class Boardmode1medium extends AnchorPane {
 
         String[] board = getBoardState();
         for (int[] combination : winningCombinations) {
-            if (board[combination[0]].equals(symbol)
-                    && board[combination[1]].equals(symbol)
-                    && board[combination[2]].equals(symbol)) {
+            if (board[combination[0]].equals(symbol) &&
+                board[combination[1]].equals(symbol) &&
+                board[combination[2]].equals(symbol)) {
                 return true;
             }
         }
         return false;
     }
 
-    public void alertShowO() {
-        alert.setTitle("Player Two win");
-        alert.setHeaderText(null);
-        losermsgmode1Base customDialogPane = new losermsgmode1Base();
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setOnCloseRequest(event -> {
-            navigateback();
-            alertStage.close();
-        });
-        // Set the custom dialog pane as the content of the alert
-        alert.setDialogPane(customDialogPane);
-        customDialogPane.getPlayAgainButton().setOnAction(e -> {
-            playAgain();
-            alertStage.close();
-        });
-        alertStage.showAndWait();
+    private void alertShowX() {
+        showWinnerAlert("X");
     }
 
-    public void alertShowX() {
-        alert.setTitle("Player  Win");
-        alert.setHeaderText(null);
-        winnermsgmode1Base customDialogPane = new winnermsgmode1Base();
-        alert.setDialogPane(customDialogPane);
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setOnCloseRequest(event -> {
-            navigateback();
-            alertStage.close(); 
-        });
-
-        customDialogPane.getPlayAgainButton().setOnAction(e -> {
-            playAgain();
-            alertStage.close();
-        });
-        alertStage.showAndWait();
+    private void alertShowO() {
+        //showWinnerMessage("O");
     }
 
-    public void alertShowDraw() {
-        alert.setTitle("Draw");
-        alert.setHeaderText(null);
-        nowinnermode1Base customDrawPane = new nowinnermode1Base();
-        alert.setDialogPane(customDrawPane);
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setOnCloseRequest(event -> {
-            navigateback();
-            alertStage.close();
-        });
-
-        customDrawPane.getPlayAgainButton().setOnAction(e -> {
-            playAgain();
-            alertStage.close();
-        });
-        alertStage.showAndWait();
+    private void alertShowDraw() {
+        System.out.println("It's a draw!");
     }
 
-    public void playAgain() {
-        btn1.setDisable(false);
-        btn1.setText("");
+    private void showWinnerAlert(String winner) {
+        Platform.runLater(() -> {
+            // Create the winner message dialog
+            winnermsgmode1Base winnerDialog = new winnermsgmode1Base();
 
-        btn2.setDisable(false);
-        btn2.setText("");
+            // Create a modal dialog to display the winner message
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(stage);
+            Scene dialogScene = new Scene(winnerDialog, 500, 300);
+            dialogStage.setScene(dialogScene);
 
-        btn3.setDisable(false);
-        btn3.setText("");
+            // Get the "PLAY AGAIN" button from the dialog
+            Button playAgainButton = winnerDialog.getPlayAgainButton();
+            playAgainButton.setOnAction(e -> {
+                winnerDialog.stopMediaPlayer();
+                dialogStage.close();
+                stage.setScene(new Scene(new Boardmode1medium(stage)));
+            });
 
-        btn4.setDisable(false);
-        btn4.setText("");
+            // Handle dialog stage close request
+            dialogStage.setOnCloseRequest((WindowEvent we) -> {
+                winnerDialog.stopMediaPlayer();
+                stage.setScene(new Scene(new Boardmode1medium(stage)));
+            });
 
-        btn5.setDisable(false);
-        btn5.setText("");
-
-        btn6.setDisable(false);
-        btn6.setText("");
-
-        btn7.setDisable(false);
-        btn7.setText("");
-
-        btn8.setDisable(false);
-        btn8.setText("");
-
-        btn9.setDisable(false);
-        btn9.setText("");
-
+            dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
+        });
     }
 
-    public void navigateback() {
+    protected void navigateback() {
         chooseDiffuculty diff = new chooseDiffuculty(stage);
         Scene difScene = new Scene(diff, 600, 400);
         stage.setScene(difScene);

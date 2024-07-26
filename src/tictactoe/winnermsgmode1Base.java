@@ -21,17 +21,17 @@ public class winnermsgmode1Base extends DialogPane {
     protected final MediaView mediaView;
     protected final Button button;
     protected MediaPlayer mediaPlayer;
-    protected final Stage stage;
+    //protected final Stage stage;
 
-    public winnermsgmode1Base(Stage stage) {
-        this.stage = stage;
+    public winnermsgmode1Base() {
+        //his.stage = stage;
         vbox = new VBox();
         mediaView = new MediaView();
         button = new Button();
 
         // Set up the MediaView to display the video
         mediaView.setFitHeight(200.0);
-        mediaView.setFitWidth(425.0);
+        mediaView.setFitWidth(450.0);
 
         // Path to the video file
         File videoFile = new File("D:\\ITI Android\\TicTacToe\\src\\tictactoe\\winning.mp4");
@@ -66,9 +66,7 @@ public class winnermsgmode1Base extends DialogPane {
         // Add event handler to stop mediaPlayer and transition to a new game
         button.setOnAction(event -> {
             stopMediaPlayer();  // Properly stop and dispose of the media player
-        Boardmode1Easy easy = new Boardmode1Easy(stage);
-        Scene eascene = new Scene(easy, 600, 400);
-        stage.setScene(eascene); // Transition to the board game
+           
         });
 
         // Add MediaView and Button to VBox
@@ -84,6 +82,9 @@ public class winnermsgmode1Base extends DialogPane {
         // Set header and content
         setHeader(new AnchorPane()); // Optional, if you don't need a header
         setContent(stackPane);
+    }
+    public Button getPlayAgainButton() {
+        return button;
     }
 
     void stopMediaPlayer() {
