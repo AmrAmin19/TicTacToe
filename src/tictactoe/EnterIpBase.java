@@ -1,5 +1,6 @@
 package tictactoe;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -135,5 +136,11 @@ public  class EnterIpBase extends AnchorPane {
                 Platform.runLater(() -> showError("Connection failed. Server not reachable."));
             }
         }).start();
+    }
+    private boolean isValidIpAddress(String ip) {
+        String ipPattern = 
+            "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}" +
+            "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
+        return ip.matches(ipPattern);
     }
 }
