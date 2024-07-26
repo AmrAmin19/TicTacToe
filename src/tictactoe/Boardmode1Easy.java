@@ -228,18 +228,36 @@ public class Boardmode1Easy extends AnchorPane {
 
 
     public void alertShowO() {
-        //showAlert("Player Two Wins", new losermsgmode1Base());
+          Platform.runLater(() -> {
+            // Create the winner message dialog
+            losermsgmode1Base losserDialog = new losermsgmode1Base();
+
+            // Create a modal dialog to display the winner message
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(stage);
+            Scene dialogScene = new Scene(losserDialog, 500, 300);
+            dialogStage.setScene(dialogScene);
+
+            // Get the "PLAY AGAIN" button from the dialog
+            Button playAgainButton = losserDialog.getPlayAgainButton();
+            playAgainButton.setOnAction(e -> {
+                losserDialog.stopMediaPlayer();
+                dialogStage.close();
+                stage.setScene(new Scene(new Boardmode1Easy(stage)));
+            });
+
+            // Handle dialog stage close request
+            dialogStage.setOnCloseRequest((WindowEvent we) -> {
+                losserDialog.stopMediaPlayer();
+                stage.setScene(new Scene(new Boardmode1Easy(stage)));
+            });
+
+            dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
+        });
     }
 
     public void alertShowX() {
-        showWinnerAlert("X");
-    }
-    
-    public void alertShowDraw() {
-        //showAlert("Draw", new nowinnermode1Base());
-    }
-
-private void showWinnerAlert(String winner) {
         Platform.runLater(() -> {
             // Create the winner message dialog
             winnermsgmode1Base winnerDialog = new winnermsgmode1Base();
@@ -256,18 +274,23 @@ private void showWinnerAlert(String winner) {
             playAgainButton.setOnAction(e -> {
                 winnerDialog.stopMediaPlayer();
                 dialogStage.close();
-                stage.setScene(new Scene(new Boardmode1medium(stage)));
+                stage.setScene(new Scene(new Boardmode1Easy(stage)));
             });
 
             // Handle dialog stage close request
             dialogStage.setOnCloseRequest((WindowEvent we) -> {
                 winnerDialog.stopMediaPlayer();
-                stage.setScene(new Scene(new Boardmode1medium(stage)));
+                stage.setScene(new Scene(new Boardmode1Easy(stage)));
             });
 
             dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
         });
     }
+    
+    public void alertShowDraw() {
+        //showAlert("Draw", new nowinnermode1Base());
+    }
+    
 
     public void playAgain() {
         resetBoard();  // Ensure the board is reset

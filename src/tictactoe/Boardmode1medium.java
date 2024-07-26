@@ -320,19 +320,7 @@ public class Boardmode1medium extends AnchorPane {
     }
 
     private void alertShowX() {
-        showWinnerAlert("X");
-    }
-
-    private void alertShowO() {
-        //showWinnerMessage("O");
-    }
-
-    private void alertShowDraw() {
-        System.out.println("It's a draw!");
-    }
-
-    private void showWinnerAlert(String winner) {
-        Platform.runLater(() -> {
+       Platform.runLater(() -> {
             // Create the winner message dialog
             winnermsgmode1Base winnerDialog = new winnermsgmode1Base();
 
@@ -359,7 +347,44 @@ public class Boardmode1medium extends AnchorPane {
 
             dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
         });
+
     }
+
+    private void alertShowO() {
+        Platform.runLater(() -> {
+            // Create the winner message dialog
+            losermsgmode1Base losserDialog = new losermsgmode1Base();
+
+            // Create a modal dialog to display the winner message
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(stage);
+            Scene dialogScene = new Scene(losserDialog, 500, 300);
+            dialogStage.setScene(dialogScene);
+
+            // Get the "PLAY AGAIN" button from the dialog
+            Button playAgainButton = losserDialog.getPlayAgainButton();
+            playAgainButton.setOnAction(e -> {
+                losserDialog.stopMediaPlayer();
+                dialogStage.close();
+                stage.setScene(new Scene(new Boardmode1medium(stage)));
+            });
+
+            // Handle dialog stage close request
+            dialogStage.setOnCloseRequest((WindowEvent we) -> {
+                losserDialog.stopMediaPlayer();
+                stage.setScene(new Scene(new Boardmode1medium(stage)));
+            });
+
+            dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
+        });
+    }
+
+    private void alertShowDraw() {
+        System.out.println("It's a draw!");
+    }
+
+   
 
     protected void navigateback() {
         chooseDiffuculty diff = new chooseDiffuculty(stage);

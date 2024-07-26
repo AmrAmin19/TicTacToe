@@ -14,7 +14,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class BoardMode1Difficult extends AnchorPane {
 
@@ -324,40 +326,64 @@ public class BoardMode1Difficult extends AnchorPane {
     }
 
     // Show an alert with the given message
-    public void alertShowO() {
-        alert.setTitle("Player Two win");
-        alert.setHeaderText(null);
-        losermsgmode1Base customDialogPane = new losermsgmode1Base();
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setOnCloseRequest(event -> {
-            navigateback();
-            alertStage.close();
+    private void alertShowO() {
+        Platform.runLater(() -> {
+            // Create the winner message dialog
+            losermsgmode1Base losserDialog = new losermsgmode1Base();
+
+            // Create a modal dialog to display the winner message
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(stage);
+            Scene dialogScene = new Scene(losserDialog, 500, 300);
+            dialogStage.setScene(dialogScene);
+
+            // Get the "PLAY AGAIN" button from the dialog
+            Button playAgainButton = losserDialog.getPlayAgainButton();
+            playAgainButton.setOnAction(e -> {
+                losserDialog.stopMediaPlayer();
+                dialogStage.close();
+                stage.setScene(new Scene(new BoardMode1Difficult(stage)));
+            });
+
+            // Handle dialog stage close request
+            dialogStage.setOnCloseRequest((WindowEvent we) -> {
+                losserDialog.stopMediaPlayer();
+                stage.setScene(new Scene(new BoardMode1Difficult(stage)));
+            });
+
+            dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
         });
-        // Set the custom dialog pane as the content of the alert
-        alert.setDialogPane(customDialogPane);
-        customDialogPane.getPlayAgainButton().setOnAction(e -> {
-            playAgain();
-            alertStage.close();
-        });
-        alertStage.showAndWait();
     }
 
-    public void alertShowX() {
-        alert.setTitle("Player  Win");
-        alert.setHeaderText(null);
-        winnermsgmode1Base customDialogPane = new winnermsgmode1Base();
-        // Set the custom dialog pane as the content of the alert
-        alert.setDialogPane(customDialogPane);
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setOnCloseRequest(event -> {
-            navigateback();
-            alertStage.close();
+     private void alertShowX() {
+        Platform.runLater(() -> {
+            // Create the winner message dialog
+            winnermsgmode1Base winnerDialog = new winnermsgmode1Base();
+
+            // Create a modal dialog to display the winner message
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(stage);
+            Scene dialogScene = new Scene(winnerDialog, 500, 300);
+            dialogStage.setScene(dialogScene);
+
+            // Get the "PLAY AGAIN" button from the dialog
+            Button playAgainButton = winnerDialog.getPlayAgainButton();
+            playAgainButton.setOnAction(e -> {
+                winnerDialog.stopMediaPlayer();
+                dialogStage.close();
+                stage.setScene(new Scene(new BoardMode1Difficult(stage)));
+            });
+
+            // Handle dialog stage close request
+            dialogStage.setOnCloseRequest((WindowEvent we) -> {
+                winnerDialog.stopMediaPlayer();
+                stage.setScene(new Scene(new BoardMode1Difficult(stage)));
+            });
+
+            dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
         });
-        customDialogPane.getPlayAgainButton().setOnAction(e -> {
-            playAgain();
-            alertStage.close();
-        });
-        alertStage.showAndWait();
     }
 
    public void alertShowDraw() {

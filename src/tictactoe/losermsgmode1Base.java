@@ -11,31 +11,38 @@ import javafx.scene.media.MediaView;
 import javafx.scene.text.Font;
 import javafx.geometry.Pos;
 import java.io.File;
+import javafx.application.Platform;
+import javafx.stage.Stage;
 
 public class losermsgmode1Base extends DialogPane {
 
     protected final VBox vbox;
+    protected final MediaView mediaView;
     protected final Button button;
-    private final MediaView mediaView;
+    protected MediaPlayer mediaPlayer;
+  
 
     public losermsgmode1Base() {
         vbox = new VBox();
-        button = new Button();
         mediaView = new MediaView();
+        button = new Button();
 
-        // Correctly format the path to the video
+        // Set up the MediaView to display the video
+        mediaView.setFitHeight(200.0);
+        mediaView.setFitWidth(450.0);
+
+        // Path to the video file
         File videoFile = new File("D:\\ITI Android\\TicTacToe\\src\\tictactoe\\lossing.mp4");
         if (!videoFile.exists()) {
             System.out.println("Error: Video file does not exist at path: " + videoFile.getAbsolutePath());
             return;
         }
 
+        // Create Media and MediaPlayer
         String videoPath = videoFile.toURI().toString();
         Media media = new Media(videoPath);
-        MediaPlayer mediaPlayer = new MediaPlayer(media);
+        mediaPlayer = new MediaPlayer(media);
         mediaView.setMediaPlayer(mediaPlayer);
-        mediaView.setFitHeight(200.0);
-        mediaView.setFitWidth(425.0);
 
         mediaPlayer.setOnReady(() -> {
             System.out.println("Media Player is ready.");
@@ -46,16 +53,23 @@ public class losermsgmode1Base extends DialogPane {
             System.out.println("Error: " + mediaPlayer.getError().getMessage());
         });
 
-        // Configure the button
+        // Configure the "PLAY AGAIN" button
         button.setMnemonicParsing(false);
         button.setPrefHeight(44.0);
-        button.setPrefWidth(192.0);
-        button.setText("TAKE YOUR REVENGE");
+        button.setPrefWidth(126.0);
         button.setStyle("-fx-background-color: #2A9DB8; -fx-text-fill: #ffffff;");
+        button.setText("PLAY AGAIN");
         button.setFont(new Font("Agency FB Bold", 20.0));
 
+        // Add event handler to stop mediaPlayer and transition to a new game
+        button.setOnAction(event -> {
+            stopMediaPlayer();  // Properly stop and dispose of the media player
+           
+        });
+
         // Add MediaView and Button to VBox
-        vbox.getChildren().addAll(mediaView, button);
+        vbox.getChildren().add(mediaView);
+        vbox.getChildren().add(button);
         vbox.setSpacing(10); // Space between video and button
         vbox.setAlignment(Pos.CENTER); // Center align VBox content
 
@@ -67,8 +81,24 @@ public class losermsgmode1Base extends DialogPane {
         setHeader(new AnchorPane()); // Optional, if you don't need a header
         setContent(stackPane);
     }
-
     public Button getPlayAgainButton() {
         return button;
     }
+
+    void stopMediaPlayer() {
+        Platform.runLater(() -> {
+            if (mediaPlayer != null) {
+                try {
+                    mediaPlayer.stop(); // Stop the video playback
+                    System.out.println("Media player stopped");
+                } catch (Exception e) {
+                    System.err.println("Error while stopping and disposing media player: " + e.getMessage());
+                } finally {
+                    mediaPlayer = null; // Ensure that mediaPlayer is set to null
+                }
+            }
+        });
+    }
+
+    
 }
