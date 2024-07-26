@@ -95,6 +95,7 @@ public  class EnterIpBase extends AnchorPane {
         arrow.setSmooth(false);
         arrow.setImage(new Image(getClass().getResource("arrow2.png").toExternalForm()));
        arrow.setOnMouseClicked(e -> navigate());
+       
         getChildren().add(text);
         getChildren().add(text0);
         getChildren().add(text1);
@@ -109,10 +110,30 @@ public  class EnterIpBase extends AnchorPane {
         Scene modScene = new Scene(mode, 600, 400);
         stage.setScene(modScene);
     }
-    public void navigatetologin () {
-   LoginBase log = new LoginBase(stage);
-        Scene logScene = new Scene(log, 600, 400);
-        stage.setScene(logScene);     
-   
-}
+    private void navigatetoLogin() {
+        String serverIp = EnterIpTxtField.getText().trim();
+
+        if (serverIp.isEmpty()) {
+            showError("IP address cannot be empty.");
+            return;
+        }
+
+        if (!isValidIpAddress(serverIp)) {
+            showError("Invalid IP address format.");
+            return;
+        }
+
+        new Thread(() -> {
+            if (isServerReachable(serverIp)) {
+                Platform.runLater(() -> {
+                    // Create LoginBase with the provided IP address
+                    LoginBase loginBase = new LoginBase(stage, serverIp);
+                    Scene loginScene = new Scene(loginBase, 600, 400);
+                    stage.setScene(loginScene);
+                });
+            } else {
+                Platform.runLater(() -> showError("Connection failed. Server not reachable."));
+            }
+        }).start();
+    }
 }
