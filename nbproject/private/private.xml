@@ -5,9 +5,7 @@
         <group>
             <file>file:/D:/ITI%20Android/TicTacToe/src/tictactoe/BoardScene.java</file>
             <file>file:/D:/ITI%20Android/TicTacToe/src/tictactoe/Boardmode1medium.java</file>
-            <file>file:/D:/ITI%20Android/TicTacToe/src/tictactoe/losermsgmode1Base.java</file>
-            <file>file:/D:/ITI%20Android/TicTacToe/src/tictactoe/Boardmode1Easy.java</file>
-            <file>file:/D:/ITI%20Android/TicTacToe/src/tictactoe/BoardMode1Difficult.java</file>
+            <file>file:/D:/ITI%20Android/TicTacToe/src/tictactoe/OnlineBoard.java</file>
         </group>
     </open-files>
 </project-private>
