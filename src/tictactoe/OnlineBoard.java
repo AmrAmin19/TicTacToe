@@ -2,7 +2,7 @@ package tictactoe;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.scene.control.Alert;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
 
-public class OnlineBoard extends AnchorPane {
+public class OnlineBoard extends AnchorPane implements Runnable {
 
     protected final GridPane gridPane;
     protected final ColumnConstraints columnConstraints;
@@ -45,11 +45,12 @@ public class OnlineBoard extends AnchorPane {
     protected final Text text0;
     protected final Text text1;
     protected final ImageView arrow;
-    private boolean playerTurn = true;
+    private boolean playerTurn = true; // True for X's turn, False for O's turn
     private final Stage stage;
     private Socket socket;
     private Scanner in;
     private PrintWriter out;
+    private Thread listenerThread;
 
     public OnlineBoard(Stage stage, String serverAddress) throws IOException {
         this.stage = stage;
@@ -164,21 +165,15 @@ public class OnlineBoard extends AnchorPane {
         setPadding(new Insets(10.0));
         arrow.setOnMouseClicked(e -> navigateback());
 
-        gridPane.getColumnConstraints().add(columnConstraints);
-        gridPane.getColumnConstraints().add(columnConstraints0);
-        gridPane.getColumnConstraints().add(columnConstraints1);
-        gridPane.getRowConstraints().add(rowConstraints);
-        gridPane.getRowConstraints().add(rowConstraints0);
-        gridPane.getRowConstraints().add(rowConstraints1);
-
         getChildren().add(gridPane);
         getChildren().add(text);
         getChildren().add(text0);
         getChildren().add(text1);
         getChildren().add(arrow);
 
-        // Start listening for messages from the server
-        new Thread(this::listenForServerMessages).start();
+        // Start the listener thread
+        listenerThread = new Thread(this);
+        listenerThread.start();
     }
 
     private void initializeButton(Button button, int col, int row) {
@@ -194,49 +189,41 @@ public class OnlineBoard extends AnchorPane {
     }
 
     private void handleButtonClick(Button button) {
-        if (!playerTurn) {
-            return; // Ignore the move if it's not this player's turn
-        }
+        if (playerTurn && button.getText().isEmpty()) {
+            String currentPlayer = playerTurn ? "X" : "O";
+            button.setText(currentPlayer);
+            button.setDisable(true);
+            sendMoveToServer(button, currentPlayer);
+            playerTurn = !playerTurn; // Switch turn
 
-        button.setDisable(true);
-        button.setText("X");
-        playerTurn = false;
-        sendMoveToServer(button);
-
-        if (checkWin("X")) {
-            alertShowX();
-        } else if (isBoardFull()) {
-            alertShowDraw();
+            if (checkWin(currentPlayer)) {
+                text1.setText("Status: " + (currentPlayer.equals("X") ? "You Win!" : "Opponent Wins!"));
+            } else if (isBoardFull()) {
+                text1.setText("Status: Draw!");
+            }
         }
     }
 
-    private void sendMoveToServer(Button button) {
+    private void sendMoveToServer(Button button, String player) {
         try {
             int index = getButtonIndex(button);
             JSONObject move = new JSONObject();
             move.put("query", "MOVE");
             move.put("index", index);
-            move.put("player", "X");
+            move.put("player", player);
             out.println(move.toString()); // Send the move to the server
+            System.out.println("Move sent to server: " + move.toString()); // Debugging print statement
         } catch (JSONException ex) {
             Logger.getLogger(OnlineBoard.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     private int getButtonIndex(Button button) {
-        if (button == btn1) return 0;
-        if (button == btn2) return 1;
-        if (button == btn3) return 2;
-        if (button == btn4) return 3;
-        if (button == btn5) return 4;
-        if (button == btn6) return 5;
-        if (button == btn7) return 6;
-        if (button == btn8) return 7;
-        if (button == btn9) return 8;
-        return -1;
+        return GridPane.getColumnIndex(button) + GridPane.getRowIndex(button) * 3;
     }
 
-    private void listenForServerMessages() {
+    @Override
+    public void run() {
         while (in.hasNextLine()) {
             String line = in.nextLine();
             System.out.println("Received from server: " + line); // Debugging print statement
@@ -275,7 +262,14 @@ public class OnlineBoard extends AnchorPane {
             button.setText(player);
             button.setDisable(true);
 
-            if (player.equals("O")) {
+            if (player.equals("X")) {
+                playerTurn = false;
+                if (checkWin("X")) {
+                    alertShowX();
+                } else if (isBoardFull()) {
+                    alertShowDraw();
+                }
+            } else {
                 playerTurn = true;
                 if (checkWin("O")) {
                     alertShowO();
@@ -301,50 +295,58 @@ public class OnlineBoard extends AnchorPane {
         }
     }
 
-   private boolean checkWin(String player) {
-    // Check rows
-    if (btn1.getText().equals(player) && btn2.getText().equals(player) && btn3.getText().equals(player)) return true;
-    if (btn4.getText().equals(player) && btn5.getText().equals(player) && btn6.getText().equals(player)) return true;
-    if (btn7.getText().equals(player) && btn8.getText().equals(player) && btn9.getText().equals(player)) return true;
+    private boolean checkWin(String symbol) {
+        // Define all winning combinations
+        int[][] winningCombinations = {
+            {0, 1, 2}, {3, 4, 5}, {6, 7, 8}, // Rows
+            {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, // Columns
+            {0, 4, 8}, {2, 4, 6} // Diagonals
+        };
 
-    // Check columns
-    if (btn1.getText().equals(player) && btn4.getText().equals(player) && btn7.getText().equals(player)) return true;
-    if (btn2.getText().equals(player) && btn5.getText().equals(player) && btn8.getText().equals(player)) return true;
-    if (btn3.getText().equals(player) && btn6.getText().equals(player) && btn9.getText().equals(player)) return true;
+        String[] board = getBoardState();
+        for (int[] combination : winningCombinations) {
+            if (board[combination[0]].equals(symbol) &&
+                board[combination[1]].equals(symbol) &&
+                board[combination[2]].equals(symbol)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private String[] getBoardState() {
+        return new String[]{
+            btn1.getText(), btn2.getText(), btn3.getText(),
+            btn4.getText(), btn5.getText(), btn6.getText(),
+            btn7.getText(), btn8.getText(), btn9.getText()
+        };
+    }
 
-    // Check diagonals
-    if (btn1.getText().equals(player) && btn5.getText().equals(player) && btn9.getText().equals(player)) return true;
-    if (btn3.getText().equals(player) && btn5.getText().equals(player) && btn7.getText().equals(player)) return true;
-
-    return false;
-}
-
-private boolean isBoardFull() {
-    return !btn1.getText().isEmpty() &&
-           !btn2.getText().isEmpty() &&
-           !btn3.getText().isEmpty() &&
-           !btn4.getText().isEmpty() &&
-           !btn5.getText().isEmpty() &&
-           !btn6.getText().isEmpty() &&
-           !btn7.getText().isEmpty() &&
-           !btn8.getText().isEmpty() &&
-           !btn9.getText().isEmpty();
-}
-
-
-    private void alertShowX() {
-        // Implement alert for X win
+    private boolean isBoardFull() {
+        for (String cell : getBoardState()) {
+            if (cell.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void alertShowO() {
-        // Implement alert for O win
+        // Implement your win alert logic here
+        text1.setText("Status: O Wins!");
+    }
+
+    private void alertShowX() {
+        // Implement your loss alert logic here
+        text1.setText("Status: X Wins!");
     }
 
     private void alertShowDraw() {
-        // Implement alert for draw
+        // Implement your draw alert logic here
+        text1.setText("Status: Draw!");
     }
 
     private void navigateback() {
-        // Implement navigation back
+        // Implement your navigation logic here
     }
 }

@@ -15,9 +15,10 @@ import javafx.stage.Stage;
  * @author Mai Ibrahem
  */
 public class TicTacToe extends Application {
-    
+    //DataExchange de;
      @Override
     public void start(Stage primaryStage) throws Exception {
+         //DataExchange de = new DataExchange();
         Parent root = new OnlineBoard(primaryStage,"172.16.8.202");
         Scene mainScene = new Scene(root, 600, 400);
         primaryStage.setTitle("Tic Tac Toe");
