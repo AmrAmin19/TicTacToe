@@ -56,9 +56,9 @@ public class losermsgmode1Base extends DialogPane {
         // Configure the "PLAY AGAIN" button
         button.setMnemonicParsing(false);
         button.setPrefHeight(44.0);
-        button.setPrefWidth(126.0);
+        button.setPrefWidth(200.0);
         button.setStyle("-fx-background-color: #2A9DB8; -fx-text-fill: #ffffff;");
-        button.setText("PLAY AGAIN");
+        button.setText("TAKE YOUR REVENGE");
         button.setFont(new Font("Agency FB Bold", 20.0));
 
         // Add event handler to stop mediaPlayer and transition to a new game

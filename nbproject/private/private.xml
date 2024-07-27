@@ -3,9 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/ITI%20Android/TicTacToe/src/tictactoe/winnermsgmode1Base.java</file>
+            <file>file:/D:/ITI%20Android/TicTacToe/src/tictactoe/BoardScene.java</file>
+            <file>file:/D:/ITI%20Android/TicTacToe/src/tictactoe/Boardmode1medium.java</file>
             <file>file:/D:/ITI%20Android/TicTacToe/src/tictactoe/losermsgmode1Base.java</file>
             <file>file:/D:/ITI%20Android/TicTacToe/src/tictactoe/Boardmode1Easy.java</file>
+            <file>file:/D:/ITI%20Android/TicTacToe/src/tictactoe/BoardMode1Difficult.java</file>
         </group>
     </open-files>
 </project-private>

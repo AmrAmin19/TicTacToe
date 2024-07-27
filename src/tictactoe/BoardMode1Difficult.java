@@ -349,7 +349,7 @@ public class BoardMode1Difficult extends AnchorPane {
             // Handle dialog stage close request
             dialogStage.setOnCloseRequest((WindowEvent we) -> {
                 losserDialog.stopMediaPlayer();
-                stage.setScene(new Scene(new BoardMode1Difficult(stage)));
+                stage.setScene(new Scene(new ChooseModeBase(stage)));
             });
 
             dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
@@ -379,7 +379,7 @@ public class BoardMode1Difficult extends AnchorPane {
             // Handle dialog stage close request
             dialogStage.setOnCloseRequest((WindowEvent we) -> {
                 winnerDialog.stopMediaPlayer();
-                stage.setScene(new Scene(new BoardMode1Difficult(stage)));
+                stage.setScene(new Scene(new ChooseModeBase(stage)));
             });
 
             dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
@@ -403,13 +403,13 @@ public class BoardMode1Difficult extends AnchorPane {
             playAgainButton.setOnAction(e -> {
                 draw.stopMediaPlayer();
                 dialogStage.close();
-                stage.setScene(new Scene(new Boardmode1medium(stage)));
+                stage.setScene(new Scene(new BoardMode1Difficult(stage)));
             });
 
             // Handle dialog stage close request
             dialogStage.setOnCloseRequest((WindowEvent we) -> {
                 draw.stopMediaPlayer();
-                stage.setScene(new Scene(new Boardmode1medium(stage)));
+                stage.setScene(new Scene(new ChooseModeBase(stage)));
             });
 
             dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
