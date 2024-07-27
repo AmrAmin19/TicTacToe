@@ -1,5 +1,6 @@
 package tictactoe;
 
+
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -10,7 +11,22 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-public  class userRegisterBase extends AnchorPane {
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.JSONException;
+import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import static javafx.scene.layout.Region.USE_PREF_SIZE;
+
+public class userRegisterBase extends AnchorPane {
 
     protected final Text text;
     protected final Text text0;
@@ -22,11 +38,16 @@ public  class userRegisterBase extends AnchorPane {
     protected final TextField NewPassTxtField;
     protected final Button NewRegisterBtn;
     protected final ImageView arrow;
-     private final Stage stage;
+    protected final Text text5;
+    protected final TextField NewEmailTxtField;
+    protected final Stage stage;
+    
+    private ConnectionManager connectionManager;
 
     public userRegisterBase(Stage stage) {
         this.stage = stage;
-
+         connectionManager = ConnectionManager.getInstance();
+        
         text = new Text();
         text0 = new Text();
         text1 = new Text();
@@ -37,6 +58,8 @@ public  class userRegisterBase extends AnchorPane {
         NewPassTxtField = new TextField();
         NewRegisterBtn = new Button();
         arrow = new ImageView();
+        text5 = new Text();
+        NewEmailTxtField = new TextField();
 
         setMaxHeight(USE_PREF_SIZE);
         setMaxWidth(USE_PREF_SIZE);
@@ -70,16 +93,16 @@ public  class userRegisterBase extends AnchorPane {
         text1.setFont(new Font("Agency FB Bold", 45.0));
 
         text2.setFill(javafx.scene.paint.Color.valueOf("#f4a24c"));
-        text2.setLayoutX(70.0);
-        text2.setLayoutY(185.0);
+        text2.setLayoutX(51.0);
+        text2.setLayoutY(242.0);
         text2.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
         text2.setStrokeWidth(0.0);
         text2.setText("ENTER USERNAME ");
         text2.setFont(new Font("Agency FB Bold", 35.0));
 
         text3.setFill(javafx.scene.paint.Color.valueOf("#f4a24c"));
-        text3.setLayoutX(70.0);
-        text3.setLayoutY(284.0);
+        text3.setLayoutX(51.0);
+        text3.setLayoutY(310.0);
         text3.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
         text3.setStrokeWidth(0.0);
         text3.setText("ENTER PASSWORD");
@@ -93,24 +116,35 @@ public  class userRegisterBase extends AnchorPane {
         text4.setText("CREATE ACCOUNT");
         text4.setFont(new Font("Agency FB Bold", 45.0));
 
-        NewUserNameTxtField.setLayoutX(67.0);
-        NewUserNameTxtField.setLayoutY(192.0);
+        NewUserNameTxtField.setLayoutX(300.0);
+        NewUserNameTxtField.setLayoutY(208.0);
         NewUserNameTxtField.setPrefHeight(42.0);
         NewUserNameTxtField.setPrefWidth(267.0);
 
-        NewPassTxtField.setLayoutX(66.0);
-        NewPassTxtField.setLayoutY(290.0);
+        NewPassTxtField.setLayoutX(300.0);
+        NewPassTxtField.setLayoutY(275.0);
         NewPassTxtField.setPrefHeight(42.0);
         NewPassTxtField.setPrefWidth(267.0);
 
-        NewRegisterBtn.setLayoutX(248.0);
-        NewRegisterBtn.setLayoutY(346.0);
+        NewRegisterBtn.setLayoutX(230.0);
+        NewRegisterBtn.setLayoutY(334.0);
         NewRegisterBtn.setMnemonicParsing(false);
-        NewRegisterBtn.setText("REGISTER");
+        NewRegisterBtn.setPrefHeight(42.0);
+        NewRegisterBtn.setPrefWidth(118.0);
+        NewRegisterBtn.setText("SIGN UP");
         NewRegisterBtn.setFont(new Font("Agency FB Bold", 18.0));
         NewRegisterBtn.setStyle("-fx-background-color: #2A9DB8; -fx-text-fill: #ffffff;");
-        //handel registbtn
-       NewRegisterBtn.setOnAction(e -> navigatetolog());
+        // Handle register button
+        NewRegisterBtn.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                try {
+                    handleSignUp();
+                } catch (JSONException ex) {
+                    Logger.getLogger(userRegisterBase.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
 
         arrow.setAccessibleRole(javafx.scene.AccessibleRole.BUTTON);
         arrow.setFitHeight(34.0);
@@ -120,7 +154,19 @@ public  class userRegisterBase extends AnchorPane {
         arrow.setPickOnBounds(true);
         arrow.setSmooth(false);
         arrow.setImage(new Image(getClass().getResource("arrow2.png").toExternalForm()));
-        arrow.setOnMouseClicked(e -> navigatetolog());
+
+        text5.setFill(javafx.scene.paint.Color.valueOf("#f4a24c"));
+        text5.setLayoutX(53.0);
+        text5.setLayoutY(174.0);
+        text5.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
+        text5.setStrokeWidth(0.0);
+        text5.setText("ENTER EMAIL ");
+        text5.setFont(new Font("Agency FB Bold", 35.0));
+
+        NewEmailTxtField.setLayoutX(300.0);
+        NewEmailTxtField.setLayoutY(140.0);
+        NewEmailTxtField.setPrefHeight(42.0);
+        NewEmailTxtField.setPrefWidth(267.0);
 
         getChildren().add(text);
         getChildren().add(text0);
@@ -132,12 +178,33 @@ public  class userRegisterBase extends AnchorPane {
         getChildren().add(NewPassTxtField);
         getChildren().add(NewRegisterBtn);
         getChildren().add(arrow);
+        getChildren().add(text5);
+        getChildren().add(NewEmailTxtField);
+        
+        
+      // connectionManager.addMessageListener(this);
+    }
 
-  }
-public void navigatetolog() {
-       LoginBase log = new LoginBase(stage);
+  
+
+    public void navigatetolog() {
+        MainSceneBase log = new MainSceneBase(stage);
         Scene loScene = new Scene(log, 600, 400);
         stage.setScene(loScene);
     }
-
-  }
+    
+     private void handleSignUp() throws JSONException
+    {
+         JSONObject signupData = new JSONObject();
+         
+                    signupData.put("query", "signUp");
+                    signupData.put("email",NewEmailTxtField.getText());
+                    System.out.println(NewEmailTxtField.getText());
+                    signupData.put("username", NewUserNameTxtField.getText());
+                     System.out.println(NewUserNameTxtField.getText());
+                    signupData.put("password", NewPassTxtField.getText());
+                     System.out.println(NewPassTxtField.getText());
+                    
+        connectionManager.sendMessage(signupData);
+    }
+}

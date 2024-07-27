@@ -1,20 +1,30 @@
 package tictactoe;
 
-import database.TicTacToeDataBase;
-import java.sql.SQLException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import static javafx.scene.layout.Region.USE_PREF_SIZE;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public  class LoginBase extends AnchorPane {
 
@@ -23,21 +33,27 @@ public  class LoginBase extends AnchorPane {
     protected final Text text1;
     protected final Text text2;
     protected final Text text3;
-    protected final TextField UserNameTxtField;
+    protected final TextField EmailField;
     protected final TextField PassTxtField;
     protected final Button LoginBtn;
     protected final Button RegisterBtn;
     protected final ImageView arrow;
     protected final Stage stage;
+     private ConnectionManager connectionManager;
+//    private final String serverIp;  // Remove static and final
+//    private static final int SERVER_PORT = 5005;
 
-    public LoginBase( Stage stage ) {
+    public LoginBase( Stage stage) {
         this.stage = stage;
+        //this.serverIp = serverIp; // Store the server IP address for future use
+
+         connectionManager = ConnectionManager.getInstance();
         text = new Text();
         text0 = new Text();
         text1 = new Text();
         text2 = new Text();
         text3 = new Text();
-        UserNameTxtField = new TextField();
+        EmailField = new TextField();
         PassTxtField = new TextField();
         LoginBtn = new Button();
         RegisterBtn = new Button();
@@ -79,7 +95,7 @@ public  class LoginBase extends AnchorPane {
         text2.setLayoutY(125.0);
         text2.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
         text2.setStrokeWidth(0.0);
-        text2.setText("ENTER USERNAME ");
+        text2.setText("ENTER EMAIL ");
         text2.setFont(new Font("Agency FB Bold", 35.0));
 
         text3.setFill(javafx.scene.paint.Color.valueOf("#f4a24c"));
@@ -90,10 +106,10 @@ public  class LoginBase extends AnchorPane {
         text3.setText("ENTER PASSWORD");
         text3.setFont(new Font("Agency FB Bold", 35.0));
 
-        UserNameTxtField.setLayoutX(67.0);
-        UserNameTxtField.setLayoutY(137.0);
-        UserNameTxtField.setPrefHeight(42.0);
-        UserNameTxtField.setPrefWidth(267.0);
+        EmailField.setLayoutX(67.0);
+        EmailField.setLayoutY(137.0);
+        EmailField.setPrefHeight(42.0);
+        EmailField.setPrefWidth(267.0);
 
         PassTxtField.setLayoutX(66.0);
         PassTxtField.setLayoutY(247.0);
@@ -108,15 +124,12 @@ public  class LoginBase extends AnchorPane {
         LoginBtn.setText("LOGIN");
         LoginBtn.setFont(new Font("Agency FB Bold", 20.0));
         LoginBtn.setStyle("-fx-background-color: #2A9DB8; -fx-text-fill: #ffffff;");
-        LoginBtn.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
+        LoginBtn.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent> () {
             @Override
             public void handle(ActionEvent event) {
                 try {
-                    TicTacToeDataBase tic = TicTacToeDataBase.getDataBase();
-                    tic.SignUp("hamza", "hamzaaaa", "124");
-                    System.out.println("from Log");
-                    
-                } catch (SQLException ex) {
+                    handleSignIn() ;
+                } catch (JSONException ex) {
                     Logger.getLogger(LoginBase.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -146,13 +159,14 @@ public  class LoginBase extends AnchorPane {
         getChildren().add(text1);
         getChildren().add(text2);
         getChildren().add(text3);
-        getChildren().add(UserNameTxtField);
+        getChildren().add(EmailField);
         getChildren().add(PassTxtField);
         getChildren().add(LoginBtn);
         getChildren().add(RegisterBtn);
         getChildren().add(arrow);
 
     }
+    
      public void navigate() {
        userRegisterBase regst = new userRegisterBase(stage);
         Scene regScene = new Scene(regst, 600, 400);
@@ -164,4 +178,19 @@ public  class LoginBase extends AnchorPane {
         Scene ipScene = new Scene(ipBase, 600, 400);
         stage.setScene(ipScene);
     }
+
+    private void handleSignIn() throws JSONException
+    {
+         JSONObject signInData = new JSONObject();
+         
+                    signInData.put("query", "signIn");
+                    signInData.put("email",EmailField.getText());
+                    System.out.println(EmailField.getText());
+                    signInData.put("password", PassTxtField.getText());
+                     System.out.println(PassTxtField.getText());
+                    
+        connectionManager.sendMessage(signInData);
+    }
+
+
 }
