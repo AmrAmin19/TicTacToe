@@ -7,12 +7,11 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -21,52 +20,46 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.JSONException;
 
 public class OnlineBoard extends AnchorPane implements Runnable {
 
-    protected final GridPane gridPane;
-    protected final ColumnConstraints columnConstraints;
-    protected final ColumnConstraints columnConstraints0;
-    protected final ColumnConstraints columnConstraints1;
-    protected final RowConstraints rowConstraints;
-    protected final RowConstraints rowConstraints0;
-    protected final RowConstraints rowConstraints1;
-    protected final Button btn1;
-    protected final Button btn2;
-    protected final Button btn3;
-    protected final Button btn4;
-    protected final Button btn5;
-    protected final Button btn6;
-    protected final Button btn7;
-    protected final Button btn8;
-    protected final Button btn9;
-    protected final Text text;
-    protected final Text text0;
-    protected final Text text1;
-    protected final ImageView arrow;
+    private final GridPane gridPane;
+    private final Button btn1;
+    private final Button btn2;
+    private final Button btn3;
+    private final Button btn4;
+    private final Button btn5;
+    private final Button btn6;
+    private final Button btn7;
+    private final Button btn8;
+    private final Button btn9;
+    private final Text text;
+    private final Text text0;
+    private final Text text1;
+    private final ImageView arrow;
     private boolean playerTurn = true; // True for X's turn, False for O's turn
     private final Stage stage;
     private Socket socket;
     private Scanner in;
     private PrintWriter out;
     private Thread listenerThread;
+    private String playerSymbol; // X or O
+    private String opponentSymbol; // O or X
 
-    public OnlineBoard(Stage stage, String serverAddress) throws IOException {
+    public OnlineBoard(Stage stage, String serverAddress, String playerSymbol) throws IOException {
         this.stage = stage;
+        this.playerSymbol = playerSymbol;
+        this.opponentSymbol = playerSymbol.equals("X") ? "O" : "X";
 
         // Connect to the server
-        socket = new Socket("172.16.8.202", 9081);
+        socket = new Socket(serverAddress, 9081); // Use the serverAddress parameter
         in = new Scanner(socket.getInputStream());
         out = new PrintWriter(socket.getOutputStream(), true);
 
+        // Send player signup information
+        sendPlayerSignup();
+
         gridPane = new GridPane();
-        columnConstraints = new ColumnConstraints();
-        columnConstraints0 = new ColumnConstraints();
-        columnConstraints1 = new ColumnConstraints();
-        rowConstraints = new RowConstraints();
-        rowConstraints0 = new RowConstraints();
-        rowConstraints1 = new RowConstraints();
         btn1 = new Button();
         btn2 = new Button();
         btn3 = new Button();
@@ -94,30 +87,6 @@ public class OnlineBoard extends AnchorPane implements Runnable {
         gridPane.setPrefHeight(184.0);
         gridPane.setPrefWidth(273.0);
         gridPane.setVgap(4.0);
-
-        columnConstraints.setHgrow(javafx.scene.layout.Priority.SOMETIMES);
-        columnConstraints.setMinWidth(10.0);
-        columnConstraints.setPrefWidth(100.0);
-
-        columnConstraints0.setHgrow(javafx.scene.layout.Priority.SOMETIMES);
-        columnConstraints0.setMinWidth(10.0);
-        columnConstraints0.setPrefWidth(100.0);
-
-        columnConstraints1.setHgrow(javafx.scene.layout.Priority.SOMETIMES);
-        columnConstraints1.setMinWidth(10.0);
-        columnConstraints1.setPrefWidth(100.0);
-
-        rowConstraints.setMinHeight(10.0);
-        rowConstraints.setPrefHeight(30.0);
-        rowConstraints.setVgrow(javafx.scene.layout.Priority.SOMETIMES);
-
-        rowConstraints0.setMinHeight(10.0);
-        rowConstraints0.setPrefHeight(30.0);
-        rowConstraints0.setVgrow(javafx.scene.layout.Priority.SOMETIMES);
-
-        rowConstraints1.setMinHeight(10.0);
-        rowConstraints1.setPrefHeight(30.0);
-        rowConstraints1.setVgrow(javafx.scene.layout.Priority.SOMETIMES);
 
         initializeButton(btn1, 0, 0);
         initializeButton(btn2, 1, 0);
@@ -173,6 +142,7 @@ public class OnlineBoard extends AnchorPane implements Runnable {
 
         // Start the listener thread
         listenerThread = new Thread(this);
+        listenerThread.setDaemon(true); // Ensures thread terminates when application exits
         listenerThread.start();
     }
 
@@ -190,16 +160,24 @@ public class OnlineBoard extends AnchorPane implements Runnable {
 
     private void handleButtonClick(Button button) {
         if (playerTurn && button.getText().isEmpty()) {
-            String currentPlayer = playerTurn ? "X" : "O";
+            // Player makes a move
+            String currentPlayer = playerSymbol;
             button.setText(currentPlayer);
             button.setDisable(true);
             sendMoveToServer(button, currentPlayer);
-            playerTurn = !playerTurn; // Switch turn
+            playerTurn = false; // Switch turn
 
+            // Check for win or draw
             if (checkWin(currentPlayer)) {
-                text1.setText("Status: " + (currentPlayer.equals("X") ? "You Win!" : "Opponent Wins!"));
+                Platform.runLater(() -> {
+                    if (currentPlayer.equals("X")) {
+                        alertShowX(); // Player X wins
+                    } else {
+                        alertShowO(); // Player O wins
+                    }
+                });
             } else if (isBoardFull()) {
-                text1.setText("Status: Draw!");
+                Platform.runLater(this::alertShowDraw); // Game is a draw
             }
         }
     }
@@ -211,73 +189,34 @@ public class OnlineBoard extends AnchorPane implements Runnable {
             move.put("query", "MOVE");
             move.put("index", index);
             move.put("player", player);
-            out.println(move.toString()); // Send the move to the server
-            System.out.println("Move sent to server: " + move.toString()); // Debugging print statement
-        } catch (JSONException ex) {
-            Logger.getLogger(OnlineBoard.class.getName()).log(Level.SEVERE, null, ex);
+            out.println(move.toString());
+        } catch (JSONException e) {
+            Logger.getLogger(OnlineBoard.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    private void sendPlayerSignup() {
+        try {
+            JSONObject signup = new JSONObject();
+            signup.put("query", "SIGNUP");
+            signup.put("symbol", playerSymbol);
+            out.println(signup.toString());
+        } catch (JSONException e) {
+            Logger.getLogger(OnlineBoard.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 
     private int getButtonIndex(Button button) {
-        return GridPane.getColumnIndex(button) + GridPane.getRowIndex(button) * 3;
-    }
-
-    @Override
-    public void run() {
-        while (in.hasNextLine()) {
-            String line = in.nextLine();
-            System.out.println("Received from server: " + line); // Debugging print statement
-            if (line != null) {
-                try {
-                    JSONObject json = new JSONObject(line);
-                    String query = json.optString("query");
-                    switch (query) {
-                        case "MOVE":
-                            int index = json.getInt("index");
-                            String player = json.getString("player");
-                            Platform.runLater(() -> makeMove(index, player));
-                            break;
-                        case "VICTORY":
-                            Platform.runLater(this::alertShowO);
-                            break;
-                        case "DEFEAT":
-                            Platform.runLater(this::alertShowX);
-                            break;
-                        case "TIE":
-                            Platform.runLater(this::alertShowDraw);
-                            break;
-                        default:
-                            System.out.println("Unknown query received");
-                    }
-                } catch (JSONException ex) {
-                    Logger.getLogger(OnlineBoard.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
-    }
-
-    private void makeMove(int index, String player) {
-        Button button = getButtonByIndex(index);
-        if (button != null) {
-            button.setText(player);
-            button.setDisable(true);
-
-            if (player.equals("X")) {
-                playerTurn = false;
-                if (checkWin("X")) {
-                    alertShowX();
-                } else if (isBoardFull()) {
-                    alertShowDraw();
-                }
-            } else {
-                playerTurn = true;
-                if (checkWin("O")) {
-                    alertShowO();
-                } else if (isBoardFull()) {
-                    alertShowDraw();
-                }
-            }
-        }
+        if (button == btn1) return 0;
+        if (button == btn2) return 1;
+        if (button == btn3) return 2;
+        if (button == btn4) return 3;
+        if (button == btn5) return 4;
+        if (button == btn6) return 5;
+        if (button == btn7) return 6;
+        if (button == btn8) return 7;
+        if (button == btn9) return 8;
+        return -1;
     }
 
     private Button getButtonByIndex(int index) {
@@ -295,8 +234,26 @@ public class OnlineBoard extends AnchorPane implements Runnable {
         }
     }
 
+    private void makeMove(int index, String player) {
+        Button button = getButtonByIndex(index);
+        if (button != null) {
+            Platform.runLater(() -> {
+                button.setText(player);
+                button.setDisable(true);
+
+                if (player.equals(opponentSymbol)) {
+                    playerTurn = true;
+                    if (checkWin(opponentSymbol)) {
+                        alertShowO();
+                    } else if (isBoardFull()) {
+                        alertShowDraw();
+                    }
+                }
+            });
+        }
+    }
+
     private boolean checkWin(String symbol) {
-        // Define all winning combinations
         int[][] winningCombinations = {
             {0, 1, 2}, {3, 4, 5}, {6, 7, 8}, // Rows
             {0, 3, 6}, {1, 4, 7}, {2, 5, 8}, // Columns
@@ -313,7 +270,7 @@ public class OnlineBoard extends AnchorPane implements Runnable {
         }
         return false;
     }
-    
+
     private String[] getBoardState() {
         return new String[]{
             btn1.getText(), btn2.getText(), btn3.getText(),
@@ -332,21 +289,74 @@ public class OnlineBoard extends AnchorPane implements Runnable {
     }
 
     private void alertShowO() {
-        // Implement your win alert logic here
-        text1.setText("Status: O Wins!");
+        Platform.runLater(() -> {
+            text1.setText("Status: O Wins!");
+            // Implement additional win logic if needed
+        });
     }
 
     private void alertShowX() {
-        // Implement your loss alert logic here
-        text1.setText("Status: X Wins!");
+        Platform.runLater(() -> {
+            text1.setText("Status: X Wins!");
+            // Implement additional win logic if needed
+        });
     }
 
     private void alertShowDraw() {
-        // Implement your draw alert logic here
-        text1.setText("Status: Draw!");
+        Platform.runLater(() -> {
+            text1.setText("Status: Draw!");
+            // Implement additional draw logic if needed
+        });
     }
 
     private void navigateback() {
         // Implement your navigation logic here
+    }
+
+    private void closeResources() {
+        try {
+            if (out != null) out.close();
+            if (in != null) in.close();
+            if (socket != null) socket.close();
+        } catch (IOException e) {
+            Logger.getLogger(OnlineBoard.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    @Override
+    public void run() {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                if (in.hasNextLine()) {
+                    String response = in.nextLine();
+                    JSONObject json = new JSONObject(response);
+                    String query = json.optString("query");
+                    switch (query) {
+                        case "MOVE":
+                            int index = json.getInt("index");
+                            String player = json.getString("player");
+                            makeMove(index, player);
+                            break;
+                        case "VICTORY":
+                            Platform.runLater(this::alertShowO);
+                            break;
+                        case "DEFEAT":
+                            Platform.runLater(this::alertShowX);
+                            break;
+                        case "TIE":
+                            Platform.runLater(this::alertShowDraw);
+                            break;
+                        default:
+                            // Handle unknown query
+                            System.out.println("Unknown query received: " + query);
+                            break;
+                    }
+                }
+            } catch (JSONException e) {
+                Logger.getLogger(OnlineBoard.class.getName()).log(Level.SEVERE, null, e);
+                break; // Exit loop on exception
+            }
+        }
+        closeResources();
     }
 }

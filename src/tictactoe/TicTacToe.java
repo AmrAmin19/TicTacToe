@@ -19,7 +19,7 @@ public class TicTacToe extends Application {
      @Override
     public void start(Stage primaryStage) throws Exception {
          //DataExchange de = new DataExchange();
-        Parent root = new OnlineBoard(primaryStage,"172.16.8.202");
+        Parent root = new OnlineBoard(primaryStage,"172.16.8.202","X");
         Scene mainScene = new Scene(root, 600, 400);
         primaryStage.setTitle("Tic Tac Toe");
         primaryStage.setScene(mainScene);
