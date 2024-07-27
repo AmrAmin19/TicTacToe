@@ -175,7 +175,7 @@ public class OnlineBoard extends AnchorPane implements Runnable {
                     if (currentPlayer.equals("X")) {
                         alertShowX(); // Player X wins
                     } else {
-                        alertShowO(); // Player O wins
+                        alertShowX(); // Player O wins
                     }
                 });
             } else if (isBoardFull()) {
@@ -209,30 +209,58 @@ public class OnlineBoard extends AnchorPane implements Runnable {
     }
 
     private int getButtonIndex(Button button) {
-        if (button == btn1) return 0;
-        if (button == btn2) return 1;
-        if (button == btn3) return 2;
-        if (button == btn4) return 3;
-        if (button == btn5) return 4;
-        if (button == btn6) return 5;
-        if (button == btn7) return 6;
-        if (button == btn8) return 7;
-        if (button == btn9) return 8;
+        if (button == btn1) {
+            return 0;
+        }
+        if (button == btn2) {
+            return 1;
+        }
+        if (button == btn3) {
+            return 2;
+        }
+        if (button == btn4) {
+            return 3;
+        }
+        if (button == btn5) {
+            return 4;
+        }
+        if (button == btn6) {
+            return 5;
+        }
+        if (button == btn7) {
+            return 6;
+        }
+        if (button == btn8) {
+            return 7;
+        }
+        if (button == btn9) {
+            return 8;
+        }
         return -1;
     }
 
     private Button getButtonByIndex(int index) {
         switch (index) {
-            case 0: return btn1;
-            case 1: return btn2;
-            case 2: return btn3;
-            case 3: return btn4;
-            case 4: return btn5;
-            case 5: return btn6;
-            case 6: return btn7;
-            case 7: return btn8;
-            case 8: return btn9;
-            default: return null;
+            case 0:
+                return btn1;
+            case 1:
+                return btn2;
+            case 2:
+                return btn3;
+            case 3:
+                return btn4;
+            case 4:
+                return btn5;
+            case 5:
+                return btn6;
+            case 6:
+                return btn7;
+            case 7:
+                return btn8;
+            case 8:
+                return btn9;
+            default:
+                return null;
         }
     }
 
@@ -264,9 +292,9 @@ public class OnlineBoard extends AnchorPane implements Runnable {
 
         String[] board = getBoardState();
         for (int[] combination : winningCombinations) {
-            if (board[combination[0]].equals(symbol) &&
-                board[combination[1]].equals(symbol) &&
-                board[combination[2]].equals(symbol)) {
+            if (board[combination[0]].equals(symbol)
+                    && board[combination[1]].equals(symbol)
+                    && board[combination[2]].equals(symbol)) {
                 return true;
             }
         }
@@ -290,76 +318,110 @@ public class OnlineBoard extends AnchorPane implements Runnable {
         return true;
     }
 
- private void alertShowO() {
-    Platform.runLater(() -> {
-        // Create the loser message dialog
-        losermsgmode1Base loseDialog = new losermsgmode1Base();
-
-        // Create a modal dialog to display the loser message
-        Stage dialogStage = new Stage();
-        dialogStage.initModality(Modality.APPLICATION_MODAL);
-        dialogStage.initOwner(stage);
-        Scene dialogScene = new Scene(loseDialog, 500, 300);
-        dialogStage.setScene(dialogScene);
-
-        // Get the "PLAY AGAIN" button from the dialog
-        Button playAgainButton = loseDialog.getPlayAgainButton();
-        playAgainButton.setOnAction(e -> {
-            loseDialog.stopMediaPlayer();
-            dialogStage.close();
-            // Close the current game and start a new one
-            restartGame();
-        });
-
-        // Handle dialog stage close request
-        dialogStage.setOnCloseRequest((WindowEvent we) -> {
-            loseDialog.stopMediaPlayer();
-            stage.setScene(new Scene(new ChooseModeBase(stage)));
-        });
-
-        dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
-    });
-}
-
-
- private void alertShowX() {
-    Platform.runLater(() -> {
-        // Create the winner message dialog
-        winnermsgmode1Base winnerDialog = new winnermsgmode1Base();
-
-        // Create a modal dialog to display the winner message
-        Stage dialogStage = new Stage();
-        dialogStage.initModality(Modality.APPLICATION_MODAL);
-        dialogStage.initOwner(stage);
-        Scene dialogScene = new Scene(winnerDialog, 500, 300);
-        dialogStage.setScene(dialogScene);
-
-        // Get the "PLAY AGAIN" button from the dialog
-        Button playAgainButton = winnerDialog.getPlayAgainButton();
-        playAgainButton.setOnAction(e -> {
-            winnerDialog.stopMediaPlayer();
-            dialogStage.close();
-            // Close the current game and start a new one
-            restartGame();
-        });
-
-        // Handle dialog stage close request
-        dialogStage.setOnCloseRequest((WindowEvent we) -> {
-            winnerDialog.stopMediaPlayer();
-            stage.setScene(new Scene(new ChooseModeBase(stage)));
-        });
-
-        dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
-    });
-}
-
-
-    private void alertShowDraw() {
+    private void alertShowO() {
         Platform.runLater(() -> {
-            text1.setText("Status: Draw!");
-            // Implement additional draw logic if needed
+            // Create the loser message dialog
+            losermsgmode1Base loseDialog = new losermsgmode1Base();
+
+            // Create a modal dialog to display the loser message
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(stage);
+            Scene dialogScene = new Scene(loseDialog, 500, 300);
+            dialogStage.setScene(dialogScene);
+
+            // Get the "Take Your Revenge" button from the dialog
+            Button takeRevengeButton = loseDialog.getPlayAgainButton();
+            takeRevengeButton.setOnAction(e -> {
+                loseDialog.stopMediaPlayer();
+                dialogStage.close();
+                // Close the current game and start a new one
+                restartGame();
+            });
+
+            // Handle dialog stage close request
+            dialogStage.setOnCloseRequest((WindowEvent we) -> {
+                loseDialog.stopMediaPlayer();
+                stage.setScene(new Scene(new ChooseModeBase(stage)));
+            });
+
+            dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
         });
     }
+
+    private void alertShowX() {
+        Platform.runLater(() -> {
+            // Create the winner message dialog
+            winnermsgmode1Base winnerDialog = new winnermsgmode1Base();
+
+            // Create a modal dialog to display the winner message
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(stage);
+            Scene dialogScene = new Scene(winnerDialog, 500, 300);
+            dialogStage.setScene(dialogScene);
+
+            // Get the "Play Again" button from the dialog
+            Button playAgainButton = winnerDialog.getPlayAgainButton();
+            playAgainButton.setOnAction(e -> {
+                winnerDialog.stopMediaPlayer();
+                dialogStage.close();
+                // Close the current game and start a new one
+                restartGame();
+            });
+
+            // Handle dialog stage close request
+            dialogStage.setOnCloseRequest((WindowEvent we) -> {
+                winnerDialog.stopMediaPlayer();
+                stage.setScene(new Scene(new ChooseModeBase(stage)));
+            });
+
+            dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
+        });
+    }
+
+    private void alertShowDraw() {
+       Platform.runLater(() -> {
+            // Create the winner message dialog
+           nowinnermode1Base draw = new nowinnermode1Base();
+
+            // Create a modal dialog to display the winner message
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(stage);
+            Scene dialogScene = new Scene(draw, 500, 300);
+            dialogStage.setScene(dialogScene);
+
+            // Get the "Play Again" button from the dialog
+            Button playAgainButton = draw.getPlayAgainButton();
+            playAgainButton.setOnAction(e -> {
+                draw.stopMediaPlayer();
+                dialogStage.close();
+                // Close the current game and start a new one
+                restartGame();
+            });
+
+            // Handle dialog stage close request
+            dialogStage.setOnCloseRequest((WindowEvent we) -> {
+                draw.stopMediaPlayer();
+                stage.setScene(new Scene(new ChooseModeBase(stage)));
+            });
+
+            dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
+        });
+    }
+
+    private void restartGame() {
+    Platform.runLater(() -> {
+        try {
+            // Replace the current scene with a new instance of OnlineBoard
+            stage.setScene(new Scene(new OnlineBoard(stage, "192.168.1.11", playerSymbol))); // Pass appropriate parameters
+        } catch (IOException ex) {
+            Logger.getLogger(OnlineBoard.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    });
+}
+
 
     private void navigateback() {
         // Implement your navigation logic here
@@ -367,9 +429,15 @@ public class OnlineBoard extends AnchorPane implements Runnable {
 
     private void closeResources() {
         try {
-            if (out != null) out.close();
-            if (in != null) in.close();
-            if (socket != null) socket.close();
+            if (out != null) {
+                out.close();
+            }
+            if (in != null) {
+                in.close();
+            }
+            if (socket != null) {
+                socket.close();
+            }
         } catch (IOException e) {
             Logger.getLogger(OnlineBoard.class.getName()).log(Level.SEVERE, null, e);
         }
@@ -417,16 +485,4 @@ public class OnlineBoard extends AnchorPane implements Runnable {
         }
         closeResources();
     }
-    
-    
-    private void restartGame() {
-    // Create a new instance of OnlineBoard and set it as the scene
-    OnlineBoard newBoard;
-    try {
-        newBoard = new OnlineBoard(stage, "192.168.1.11", playerSymbol); // Adjust parameters as needed
-        stage.setScene(new Scene(newBoard));
-    } catch (IOException e) {
-        Logger.getLogger(OnlineBoard.class.getName()).log(Level.SEVERE, null, e);
-    }
-}
 }
