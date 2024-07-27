@@ -20,6 +20,8 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.stage.Modality;
+import javafx.stage.WindowEvent;
 
 public class OnlineBoard extends AnchorPane implements Runnable {
 
@@ -37,7 +39,7 @@ public class OnlineBoard extends AnchorPane implements Runnable {
     private final Text text0;
     private final Text text1;
     private final ImageView arrow;
-    private boolean playerTurn = true; // True for X's turn, False for O's turn
+    private boolean playerTurn = false; // True for X's turn, False for O's turn
     private final Stage stage;
     private Socket socket;
     private Scanner in;
@@ -52,7 +54,7 @@ public class OnlineBoard extends AnchorPane implements Runnable {
         this.opponentSymbol = playerSymbol.equals("X") ? "O" : "X";
 
         // Connect to the server
-        socket = new Socket(serverAddress, 9081); // Use the serverAddress parameter
+        socket = new Socket("192.168.1.11", 9081); // Use the serverAddress parameter
         in = new Scanner(socket.getInputStream());
         out = new PrintWriter(socket.getOutputStream(), true);
 
@@ -288,19 +290,69 @@ public class OnlineBoard extends AnchorPane implements Runnable {
         return true;
     }
 
-    private void alertShowO() {
-        Platform.runLater(() -> {
-            text1.setText("Status: O Wins!");
-            // Implement additional win logic if needed
-        });
-    }
+ private void alertShowO() {
+    Platform.runLater(() -> {
+        // Create the loser message dialog
+        losermsgmode1Base loseDialog = new losermsgmode1Base();
 
-    private void alertShowX() {
-        Platform.runLater(() -> {
-            text1.setText("Status: X Wins!");
-            // Implement additional win logic if needed
+        // Create a modal dialog to display the loser message
+        Stage dialogStage = new Stage();
+        dialogStage.initModality(Modality.APPLICATION_MODAL);
+        dialogStage.initOwner(stage);
+        Scene dialogScene = new Scene(loseDialog, 500, 300);
+        dialogStage.setScene(dialogScene);
+
+        // Get the "PLAY AGAIN" button from the dialog
+        Button playAgainButton = loseDialog.getPlayAgainButton();
+        playAgainButton.setOnAction(e -> {
+            loseDialog.stopMediaPlayer();
+            dialogStage.close();
+            // Close the current game and start a new one
+            restartGame();
         });
-    }
+
+        // Handle dialog stage close request
+        dialogStage.setOnCloseRequest((WindowEvent we) -> {
+            loseDialog.stopMediaPlayer();
+            stage.setScene(new Scene(new ChooseModeBase(stage)));
+        });
+
+        dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
+    });
+}
+
+
+ private void alertShowX() {
+    Platform.runLater(() -> {
+        // Create the winner message dialog
+        winnermsgmode1Base winnerDialog = new winnermsgmode1Base();
+
+        // Create a modal dialog to display the winner message
+        Stage dialogStage = new Stage();
+        dialogStage.initModality(Modality.APPLICATION_MODAL);
+        dialogStage.initOwner(stage);
+        Scene dialogScene = new Scene(winnerDialog, 500, 300);
+        dialogStage.setScene(dialogScene);
+
+        // Get the "PLAY AGAIN" button from the dialog
+        Button playAgainButton = winnerDialog.getPlayAgainButton();
+        playAgainButton.setOnAction(e -> {
+            winnerDialog.stopMediaPlayer();
+            dialogStage.close();
+            // Close the current game and start a new one
+            restartGame();
+        });
+
+        // Handle dialog stage close request
+        dialogStage.setOnCloseRequest((WindowEvent we) -> {
+            winnerDialog.stopMediaPlayer();
+            stage.setScene(new Scene(new ChooseModeBase(stage)));
+        });
+
+        dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
+    });
+}
+
 
     private void alertShowDraw() {
         Platform.runLater(() -> {
@@ -327,36 +379,54 @@ public class OnlineBoard extends AnchorPane implements Runnable {
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                if (in.hasNextLine()) {
+                if (in.hasNext()) {
                     String response = in.nextLine();
                     JSONObject json = new JSONObject(response);
-                    String query = json.optString("query");
+                    String query = json.getString("query");
+
                     switch (query) {
                         case "MOVE":
                             int index = json.getInt("index");
-                            String player = json.getString("player");
-                            makeMove(index, player);
+                            String opponent = json.getString("player");
+                            makeMove(index, opponent);
+                            playerTurn = true; // It's now the player's turn
                             break;
-                        case "VICTORY":
-                            Platform.runLater(this::alertShowO);
+
+                        case "YOUR_TURN":
+                            playerTurn = true;
                             break;
-                        case "DEFEAT":
-                            Platform.runLater(this::alertShowX);
+
+                        case "SYMBOL":
+                            playerSymbol = json.getString("symbol");
+                            opponentSymbol = playerSymbol.equals("X") ? "O" : "X";
                             break;
-                        case "TIE":
-                            Platform.runLater(this::alertShowDraw);
+
+                        case "Game Started":
+                            // Handle game start logic if needed
                             break;
+
                         default:
-                            // Handle unknown query
-                            System.out.println("Unknown query received: " + query);
+                            // Handle unknown queries
                             break;
                     }
                 }
             } catch (JSONException e) {
                 Logger.getLogger(OnlineBoard.class.getName()).log(Level.SEVERE, null, e);
-                break; // Exit loop on exception
+                break;
             }
         }
         closeResources();
     }
+    
+    
+    private void restartGame() {
+    // Create a new instance of OnlineBoard and set it as the scene
+    OnlineBoard newBoard;
+    try {
+        newBoard = new OnlineBoard(stage, "192.168.1.11", playerSymbol); // Adjust parameters as needed
+        stage.setScene(new Scene(newBoard));
+    } catch (IOException e) {
+        Logger.getLogger(OnlineBoard.class.getName()).log(Level.SEVERE, null, e);
+    }
+}
 }

@@ -32,7 +32,7 @@ public  class nowinnermode1Base extends DialogPane {
         mediaView.setFitWidth(450.0);
 
         // Path to the video file
-        File videoFile = new File("D:\\ITI Android\\TicTacToe\\src\\tictactoe\\lossing.mp4");
+        File videoFile = new File("D:\\ITI Android\\TicTacToe\\src\\tictactoe\\draw.mp4");
         if (!videoFile.exists()) {
             System.out.println("Error: Video file does not exist at path: " + videoFile.getAbsolutePath());
             return;
