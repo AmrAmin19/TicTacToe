@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.derby.jdbc.ClientDriver;  // Ensure this import is correct and the library is included in your project
+import org.apache.derby.jdbc.ClientDriver;
 
 /**
  *
@@ -25,7 +25,7 @@ public class TicTacToeDataBase {
     }
 
     // Private constructor to initialize database connection
-    private TicTacToeDataBase() throws SQLException {
+    public TicTacToeDataBase() throws SQLException {
         DriverManager.registerDriver(new ClientDriver());
         con = DriverManager.getConnection("jdbc:derby://localhost:1527/TicTacToeDataBase", "root", "root");
     }

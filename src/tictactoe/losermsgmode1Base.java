@@ -1,5 +1,8 @@
 package tictactoe;
 
+import database.TicTacToeDataBase;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.DialogPane;
 import javafx.scene.layout.AnchorPane;
@@ -54,6 +57,7 @@ public  class losermsgmode1Base extends DialogPane {
         button.setText("TAKE YOUR REVENGE");
         button.setStyle("-fx-background-color: #2A9DB8; -fx-text-fill: #ffffff;");
         button.setFont(new Font("Agency FB Bold", 20.0));
+        
         setContent(anchorPane0);
 
         anchorPane.getChildren().add(text);

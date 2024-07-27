@@ -1,5 +1,11 @@
 package tictactoe;
 
+import database.TicTacToeDataBase;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -102,6 +108,19 @@ public  class LoginBase extends AnchorPane {
         LoginBtn.setText("LOGIN");
         LoginBtn.setFont(new Font("Agency FB Bold", 20.0));
         LoginBtn.setStyle("-fx-background-color: #2A9DB8; -fx-text-fill: #ffffff;");
+        LoginBtn.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                try {
+                    TicTacToeDataBase tic = TicTacToeDataBase.getDataBase();
+                    tic.SignUp("hamza", "hamzaaaa", "124");
+                    System.out.println("from Log");
+                    
+                } catch (SQLException ex) {
+                    Logger.getLogger(LoginBase.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
 
 
         RegisterBtn.setLayoutX(311.0);
