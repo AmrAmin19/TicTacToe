@@ -146,7 +146,7 @@ public class PlayerStatusBase extends AnchorPane {
 
         // Connect to the server
         try {
-            socket = new Socket("192.168.1.106", 9081); // Replace with your server IP and port
+            socket = new Socket("10.10.13.75", 5005); // Replace with your server IP and port
             input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             output = new PrintWriter(socket.getOutputStream(), true);
 
