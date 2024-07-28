@@ -32,12 +32,11 @@ public class losermsgmode1Base extends DialogPane {
         mediaView.setFitWidth(450.0);
 
         // Path to the video file
-       File videoFile = new File("C:\\Users\\Abdul-Rahman\\OneDrive\\Documents\\GitHub\\TicTacToe\\TicTacToe\\src\\tictactoe\\lossing.mp4");
+        File videoFile = new File("C:\\Users\\Abdul-Rahman\\OneDrive\\Desktop\\TicTacToe\\TicTacToe\\src\\tictactoe\\lossing.mp4");
         if (!videoFile.exists()) {
             System.out.println("Error: Video file does not exist at path: " + videoFile.getAbsolutePath());
             return;
         }
-
         // Create Media and MediaPlayer
         String videoPath = videoFile.toURI().toString();
         Media media = new Media(videoPath);
