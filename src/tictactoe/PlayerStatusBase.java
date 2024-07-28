@@ -146,7 +146,7 @@ public class PlayerStatusBase extends AnchorPane {
 
         // Connect to the server
         try {
-            socket = new Socket("10.10.13.75", 5005); // Replace with your server IP and port
+            socket = new Socket("10.10.13.84", 9081); // Replace with your server IP and port
             input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             output = new PrintWriter(socket.getOutputStream(), true);
 
@@ -162,7 +162,9 @@ public class PlayerStatusBase extends AnchorPane {
 
             // Update UI with active users
             for (String user : usersList) {
-                vBox.getChildren().add(createPlayerEntry(user)); // Add each player entry to the VBox
+                if (!user.isEmpty()) {
+                    vBox.getChildren().add(createPlayerEntry(user)); // Add each player entry to the VBox
+                }
             }
 
         } catch (IOException | JSONException e) {

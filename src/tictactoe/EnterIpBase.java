@@ -112,12 +112,12 @@ public  class EnterIpBase extends AnchorPane {
     }
     public void navigatetologin () {
 //        EnterIpTxtField.getText();
-          PlayerStatusBase LIstPage=new PlayerStatusBase(stage);
-        Scene ipScene = new Scene(LIstPage, 600, 400);
-        stage.setScene(ipScene);
-//   LoginBase log = new LoginBase(stage);
+         PlayerStatusBase LIstPage=new PlayerStatusBase(stage);
+     Scene ipScene = new Scene(LIstPage, 600, 400);
+       stage.setScene(ipScene);
+ //  LoginBase log = new LoginBase(stage);
 //        Scene logScene = new Scene(log, 600, 400);
-//        stage.setScene(logScene);     
+   //     stage.setScene(logScene);     
    
 }
 }
