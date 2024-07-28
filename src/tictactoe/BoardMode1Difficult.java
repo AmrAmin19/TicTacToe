@@ -1,5 +1,12 @@
 package tictactoe;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -14,7 +21,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class BoardMode1Difficult extends AnchorPane {
 
@@ -39,6 +48,10 @@ public class BoardMode1Difficult extends AnchorPane {
     protected final Text text0;
     protected final Text text1;
     protected final ImageView arrow;
+    
+private List<String> moves = new ArrayList<>();
+        protected final ImageView RecImageView;
+        
     Alert alert;
     private final Stage stage; // Reference to the application stage
     private boolean playerTurn = true; // Track player's turn
@@ -69,6 +82,9 @@ public class BoardMode1Difficult extends AnchorPane {
         text1 = new Text();
         arrow = new ImageView();
         alert = new Alert(AlertType.NONE);
+        
+          RecImageView = new ImageView();
+
 
         // Set dimensions of the board
         setMaxHeight(USE_PREF_SIZE);
@@ -158,6 +174,17 @@ public class BoardMode1Difficult extends AnchorPane {
         arrow.setImage(new Image(getClass().getResource("arrow2.png").toExternalForm()));
         setPadding(new Insets(10.0));
         arrow.setOnMouseClicked(e -> navigateback());
+        
+        RecImageView.setAccessibleRole(javafx.scene.AccessibleRole.BUTTON);
+        RecImageView.setFitHeight(50.0);
+        RecImageView.setFitWidth(50.0);
+        RecImageView.setLayoutX(533.0);
+        RecImageView.setLayoutY(336.0);
+        RecImageView.setPickOnBounds(true);
+        RecImageView.setPreserveRatio(true);
+        RecImageView.setImage(new Image(getClass().getResource("rec.png").toExternalForm()));
+        RecImageView.setOnMouseClicked(e -> getRecordGame());
+
 
         // Set padding for the board
         setPadding(new Insets(10.0));
@@ -167,7 +194,7 @@ public class BoardMode1Difficult extends AnchorPane {
         gridPane.getRowConstraints().addAll(rowConstraints, rowConstraints0, rowConstraints1);
 
         // Add all GUI components to the main pane
-        getChildren().addAll(gridPane, text, text0, text1, arrow);
+        getChildren().addAll(gridPane, text, text0, text1, arrow,RecImageView);
     }
 
     // Initialize a button with its properties and add it to the grid
@@ -184,49 +211,57 @@ public class BoardMode1Difficult extends AnchorPane {
     }
 
     // Handle button click event
-    private void handleButtonClick(Button button) {
-        button.setDisable(true);
-        button.setText("X");
-        playerTurn = false;
-        if (checkWin("X")) {
-            alertShowX();
-        } else if (isBoardFull()) {
-            alertShowDraw();
-        } else {
-            // Computer makes a move after 1 second
-            new Thread(() -> {
-                try {
-                    Thread.sleep(500); // 1 second delay
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                Platform.runLater(this::computerMove);
-            }).start();
-        }
+private void handleButtonClick(Button button) {
+    button.setDisable(true);
+    button.setText("X");
+    moves.add("Player: " + getButtonPosition(button)); // Record player move
+    saveMovesToFile(); // Save moves to file after each move
+    playerTurn = false;
+    if (checkWin("X")) {
+        alertShowX();
+    } else if (isBoardFull()) {
+        alertShowDraw();
+    } else {
+        // Computer makes a move after 1 second
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000); // 1 second delay
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Platform.runLater(this::computerMove);
+        }).start();
     }
+}
+
+
 
     // Computer makes a move
-    private void computerMove() {
+private void computerMove() {
+    Move bestMove = findBestMove(); // Find the best move
+    if (bestMove.row != -1 && bestMove.col != -1) {
         Button[][] board = {
             {btn1, btn2, btn3},
             {btn4, btn5, btn6},
             {btn7, btn8, btn9}
         };
-        Move bestMove = findBestMove(); // Find the best move
-        Platform.runLater(() -> {
-            Button buttonToDisable = board[bestMove.row][bestMove.col];
-            buttonToDisable.setText("O"); // Set computer move
-            buttonToDisable.setDisable(true); // Disable the button
-            // Check if the computer won after making the move
-            if (checkWin("O")) {
-                alertShowO(); // Show the win alert
-            } else if (isBoardFull()) {
-                alertShowDraw(); // Show the draw alert
-            } else {
-                playerTurn = true; // Switch to player's turn
-            }
-        });
+        Button buttonToDisable = board[bestMove.row][bestMove.col];
+        buttonToDisable.setText("O");
+        moves.add("Computer: " + getButtonPosition(buttonToDisable)); // Record computer move
+        saveMovesToFile(); // Save moves to file
+        buttonToDisable.setDisable(true); // Disable the button
+        // Check if the computer won after making the move
+        if (checkWin("O")) {
+            alertShowO(); // Show the win alert
+        } else if (isBoardFull()) {
+            alertShowDraw(); // Show the draw alert
+        } else {
+            playerTurn = true; // Switch to player's turn
+        }
     }
+}
+
+
 
     // Find the best move for the computer using Minimax algorithm
     private Move findBestMove() {
@@ -322,60 +357,103 @@ public class BoardMode1Difficult extends AnchorPane {
         }
         return true; // Return true if all cells are filled
     }
+    
+    private String getButtonPosition(Button button) {
+    Integer colIndex = GridPane.getColumnIndex(button);
+    Integer rowIndex = GridPane.getRowIndex(button);
+    return "(" + rowIndex + ", " + colIndex + ")";
+}
+
 
     // Show an alert with the given message
-    public void alertShowO() {
-        alert.setTitle("Player Two win");
-        alert.setHeaderText(null);
-        losermsgmode1Base customDialogPane = new losermsgmode1Base();
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setOnCloseRequest(event -> {
-            navigateback();
-            alertStage.close();
+    private void alertShowO() {
+        Platform.runLater(() -> {
+            // Create the winner message dialog
+            losermsgmode1Base losserDialog = new losermsgmode1Base();
+
+            // Create a modal dialog to display the winner message
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(stage);
+            Scene dialogScene = new Scene(losserDialog, 500, 300);
+            dialogStage.setScene(dialogScene);
+
+            // Get the "PLAY AGAIN" button from the dialog
+            Button playAgainButton = losserDialog.getPlayAgainButton();
+            playAgainButton.setOnAction(e -> {
+                losserDialog.stopMediaPlayer();
+                dialogStage.close();
+                stage.setScene(new Scene(new BoardMode1Difficult(stage)));
+            });
+
+            // Handle dialog stage close request
+            dialogStage.setOnCloseRequest((WindowEvent we) -> {
+                losserDialog.stopMediaPlayer();
+                stage.setScene(new Scene(new ChooseModeBase(stage)));
+            });
+
+            dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
         });
-        // Set the custom dialog pane as the content of the alert
-        alert.setDialogPane(customDialogPane);
-        customDialogPane.getPlayAgainButton().setOnAction(e -> {
-            playAgain();
-            alertStage.close();
-        });
-        alertStage.showAndWait();
     }
 
-    public void alertShowX() {
-        alert.setTitle("Player  Win");
-        alert.setHeaderText(null);
-        winnermsgmode1Base customDialogPane = new winnermsgmode1Base();
-        // Set the custom dialog pane as the content of the alert
-        alert.setDialogPane(customDialogPane);
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setOnCloseRequest(event -> {
-            navigateback();
-            alertStage.close();
+     private void alertShowX() {
+        Platform.runLater(() -> {
+            // Create the winner message dialog
+            winnermsgmode1Base winnerDialog = new winnermsgmode1Base();
+
+            // Create a modal dialog to display the winner message
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(stage);
+            Scene dialogScene = new Scene(winnerDialog, 500, 300);
+            dialogStage.setScene(dialogScene);
+
+            // Get the "PLAY AGAIN" button from the dialog
+            Button playAgainButton = winnerDialog.getPlayAgainButton();
+            playAgainButton.setOnAction(e -> {
+                winnerDialog.stopMediaPlayer();
+                dialogStage.close();
+                stage.setScene(new Scene(new BoardMode1Difficult(stage)));
+            });
+
+            // Handle dialog stage close request
+            dialogStage.setOnCloseRequest((WindowEvent we) -> {
+                winnerDialog.stopMediaPlayer();
+                stage.setScene(new Scene(new ChooseModeBase(stage)));
+            });
+
+            dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
         });
-        customDialogPane.getPlayAgainButton().setOnAction(e -> {
-            playAgain();
-            alertStage.close();
-        });
-        alertStage.showAndWait();
     }
 
    public void alertShowDraw() {
-        alert.setTitle("Draw");
-        alert.setHeaderText(null);
-        nowinnermode1Base customDrawPane = new nowinnermode1Base();
-        // Set the custom dialog pane as the content of the alert
-        alert.setDialogPane(customDrawPane);
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setOnCloseRequest(event -> {
-            navigateback();
-            alertStage.close();
+         Platform.runLater(() -> {
+            // Create the winner message dialog
+            nowinnermode1Base draw = new nowinnermode1Base();
+
+            // Create a modal dialog to display the winner message
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(stage);
+            Scene dialogScene = new Scene(draw, 500, 300);
+            dialogStage.setScene(dialogScene);
+
+            // Get the "PLAY AGAIN" button from the dialog
+            Button playAgainButton = draw.getPlayAgainButton();
+            playAgainButton.setOnAction(e -> {
+                draw.stopMediaPlayer();
+                dialogStage.close();
+                stage.setScene(new Scene(new BoardMode1Difficult(stage)));
+            });
+
+            // Handle dialog stage close request
+            dialogStage.setOnCloseRequest((WindowEvent we) -> {
+                draw.stopMediaPlayer();
+                stage.setScene(new Scene(new ChooseModeBase(stage)));
+            });
+
+            dialogStage.showAndWait(); // Show the modal dialog and wait for it to close
         });
-        customDrawPane.getPlayAgainButton().setOnAction(e -> {
-            playAgain();
-            alertStage.close();
-        });
-        alertStage.showAndWait();
     }
 
     public void playAgain() {
@@ -409,10 +487,101 @@ public class BoardMode1Difficult extends AnchorPane {
             this.col = col;
         }
     }
+ // Clear the recorded moves after displaying the game
+    private void clearRecordedMoves() {
+        moves.clear();
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("game_moves.txt"))) {
+            writer.write(""); // Clear the content of the file
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Save moves to file
+private void saveMovesToFile() {
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter("game_moves.txt"))) {
+        for (String move : moves) {
+            writer.write(move);
+            writer.newLine();
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+
+    // Display recorded game after a short delay to allow alert to be read
+    private void displayRecordedGameAfterDelay() {
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000); // 2-second delay
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Platform.runLater(this::displayRecordedGameOnNewBoard);
+        }).start();
+    }
+
+    // Display the recorded game on a new board
+   private void displayRecordedGameOnNewBoard() {
+    // Create a new stage
+    Stage newStage = new Stage();
+    newStage.initModality(Modality.APPLICATION_MODAL);
+    newStage.setTitle("Recorded Game Replay");
+
+    // Create a new board for the replay
+    GridPane replayGrid = new GridPane();
+    replayGrid.setHgap(4.0);
+    replayGrid.setVgap(4.0);
+    replayGrid.setPadding(new Insets(10.0));
+
+    // Create buttons for the new board
+    Button[][] replayButtons = new Button[3][3];
+    for (int row = 0; row < 3; row++) {
+        for (int col = 0; col < 3; col++) {
+            Button button = new Button();
+            button.setPrefSize(100, 100);
+            button.setFont(new Font("Arial", 30));
+            replayButtons[row][col] = button;
+            replayGrid.add(button, col, row);
+        }
+    }
+
+    // Read recorded moves and replay them on the new board
+    new Thread(() -> {
+        try {
+            List<String> lines = Files.readAllLines(Paths.get("game_moves.txt"));
+            for (String line : lines) {
+                Platform.runLater(() -> replayMove(line, replayButtons));
+                Thread.sleep(1000); // 1-second delay between moves
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }).start();
+
+    // Set up the scene and show the stage
+    Scene scene = new Scene(replayGrid, 320, 340);
+    newStage.setScene(scene);
+    newStage.show();
+}
+
+private void replayMove(String move, Button[][] replayButtons) {
+    String[] parts = move.split(": ");
+    String player = parts[0].equals("Player") ? "X" : "O";
+    String position = parts[1].substring(1, parts[1].length() - 1); // Remove parentheses
+    String[] coords = position.split(", ");
+    int row = Integer.parseInt(coords[0]);
+    int col = Integer.parseInt(coords[1]);
+    replayButtons[row][col].setText(player);
+}
 
     public void navigateback() {
         chooseDiffuculty diff = new chooseDiffuculty(stage);
         Scene difScene = new Scene(diff, 600, 400);
         stage.setScene(difScene);
+    }
+    
+    private void getRecordGame() {
+        displayRecordedGameOnNewBoard();
     }
 }

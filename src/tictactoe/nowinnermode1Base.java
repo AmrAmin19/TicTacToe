@@ -1,66 +1,104 @@
 package tictactoe;
 
+import java.io.File;
+import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.DialogPane;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.MediaView;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 public  class nowinnermode1Base extends DialogPane {
 
-    protected final AnchorPane anchorPane;
-    protected final Text text;
-    protected final Text text0;
-    protected final AnchorPane anchorPane0;
+    protected final VBox vbox;
+    protected final MediaView mediaView;
     protected final Button button;
+    protected MediaPlayer mediaPlayer;
+  
 
     public nowinnermode1Base() {
-
-        anchorPane = new AnchorPane();
-        text = new Text();
-        text0 = new Text();
-        anchorPane0 = new AnchorPane();
+        vbox = new VBox();
+        mediaView = new MediaView();
         button = new Button();
 
-        anchorPane.setPrefHeight(200.0);
-        anchorPane.setPrefWidth(425.0);
+        // Set up the MediaView to display the video
+        mediaView.setFitHeight(200.0);
+        mediaView.setFitWidth(450.0);
 
-        text.setFill(javafx.scene.paint.Color.valueOf("#fd6801"));
-        text.setLayoutX(73.0);
-        text.setLayoutY(105.0);
-        text.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
-        text.setStrokeWidth(0.0);
-        text.setText("COMPITIION IS ON");
-        text.setFont(new Font("Agency FB Bold", 45.0));
+        // Path to the video file
+        File videoFile = new File("C:\\Users\\Abdul-Rahman\\OneDrive\\Documents\\GitHub\\TicTacToe\\TicTacToe\\src\\tictactoe\\draw.mp4");
+        if (!videoFile.exists()) {
+            System.out.println("Error: Video file does not exist at path: " + videoFile.getAbsolutePath());
+            return;
+        }
 
-        text0.setFill(javafx.scene.paint.Color.valueOf("#fd6801"));
-        text0.setLayoutX(135.0);
-        text0.setLayoutY(159.0);
-        text0.setStrokeType(javafx.scene.shape.StrokeType.OUTSIDE);
-        text0.setStrokeWidth(0.0);
-        text0.setText("FIRE"+"\uD83D\uDD25"+"\uD83D\uDD25");
-        text0.setFont(new Font("Agency FB Bold", 45.0));
-        setHeader(anchorPane);
+        // Create Media and MediaPlayer
+        String videoPath = videoFile.toURI().toString();
+        Media media = new Media(videoPath);
+        mediaPlayer = new MediaPlayer(media);
+        mediaView.setMediaPlayer(mediaPlayer);
 
-        anchorPane0.setPrefHeight(69.0);
-        anchorPane0.setPrefWidth(365.0);
+        mediaPlayer.setOnReady(() -> {
+            System.out.println("Media Player is ready.");
+            mediaPlayer.play();  // Start playing the video
+        });
 
-        button.setLayoutX(155.0);
-        button.setLayoutY(13.0);
+        mediaPlayer.setOnError(() -> {
+            System.out.println("Error: " + mediaPlayer.getError().getMessage());
+        });
+
+        // Configure the "PLAY AGAIN" button
         button.setMnemonicParsing(false);
         button.setPrefHeight(44.0);
         button.setPrefWidth(126.0);
-        button.setText("PLAY AGAIN");
         button.setStyle("-fx-background-color: #2A9DB8; -fx-text-fill: #ffffff;");
+        button.setText("PLAY AGAIN");
         button.setFont(new Font("Agency FB Bold", 20.0));
-        setContent(anchorPane0);
 
-        anchorPane.getChildren().add(text);
-        anchorPane.getChildren().add(text0);
-        anchorPane0.getChildren().add(button);
+        // Add event handler to stop mediaPlayer and transition to a new game
+        button.setOnAction(event -> {
+            stopMediaPlayer();  // Properly stop and dispose of the media player
+           
+        });
 
+        // Add MediaView and Button to VBox
+        vbox.getChildren().add(mediaView);
+        vbox.getChildren().add(button);
+        vbox.setSpacing(10); // Space between video and button
+        vbox.setAlignment(Pos.CENTER); // Center align VBox content
+
+        // Center VBox in StackPane
+        StackPane stackPane = new StackPane(vbox);
+        stackPane.setAlignment(Pos.CENTER);
+
+        // Set header and content
+        setHeader(new AnchorPane()); // Optional, if you don't need a header
+        setContent(stackPane);
     }
     public Button getPlayAgainButton() {
         return button;
     }
+
+    void stopMediaPlayer() {
+        Platform.runLater(() -> {
+            if (mediaPlayer != null) {
+                try {
+                    mediaPlayer.stop(); // Stop the video playback
+                    System.out.println("Media player stopped");
+                } catch (Exception e) {
+                    System.err.println("Error while stopping and disposing media player: " + e.getMessage());
+                } finally {
+                    mediaPlayer = null; // Ensure that mediaPlayer is set to null
+                }
+            }
+        });
+    }
+
+    
 }
