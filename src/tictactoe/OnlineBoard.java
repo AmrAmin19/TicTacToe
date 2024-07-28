@@ -54,7 +54,7 @@ public class OnlineBoard extends AnchorPane implements Runnable {
         this.opponentSymbol = playerSymbol.equals("X") ? "O" : "X";
 
         // Connect to the server
-        socket = new Socket("192.168.1.11", 9081); // Use the serverAddress parameter
+        socket = new Socket("172.16.8.202", 9081); // Use the serverAddress parameter
         in = new Scanner(socket.getInputStream());
         out = new PrintWriter(socket.getOutputStream(), true);
 

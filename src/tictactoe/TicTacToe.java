@@ -19,19 +19,19 @@ public class TicTacToe extends Application {
      @Override
     public void start(Stage primaryStage) throws Exception {
          //DataExchange de = new DataExchange();
-        Parent root = new OnlineBoard(primaryStage,"172.16.8.202","X");
+        /*Parent root = new OnlineBoard(primaryStage,"172.16.8.202","X");
         Scene mainScene = new Scene(root, 600, 400);
         primaryStage.setTitle("Tic Tac Toe");
         primaryStage.setScene(mainScene);
-        primaryStage.show();
+        primaryStage.show();*/
         
         
        //Initialize the ChooseModeBase screen and pass the primary stage
-        /*WelcomeBase Wb = new WelcomeBase(primaryStage);
+        WelcomeBase Wb = new WelcomeBase(primaryStage);
         Scene mainScene = new Scene(Wb, 600, 400);
         primaryStage.setTitle("Tic Tac Toe");
         primaryStage.setScene(mainScene);
-        primaryStage.show();*/
+        primaryStage.show();
     /**
      * @param the command line arguments
      */
